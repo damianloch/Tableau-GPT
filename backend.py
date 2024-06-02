@@ -12,14 +12,16 @@ engine = create_engine('postgresql://username:password@localhost/my_database')
 openai.api_key = 'sk-proj-8W1tHA2pEDS5VTVw0rDHT3BlbkFJN0mGTTl6JbkhUqBJ81Wo'
 
 def get_query_from_prompt(user_prompt, timeout=60):
-    prompt = "Act as if you are a machine with the sole purpose of querying a SQL database based on a prompt from the user. Here is that prompt: " + user_prompt
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {openai.api_key}'
     }
     data = {
         "model": "gpt-4",
-        "messages": [{"role": "system", "content": prompt}]
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant that only outputs SQL queries."},
+            {"role": "user", "content": f"Generate a SQL query for the following request: {user_prompt}. Only provide the SQL query without any additional text."}
+        ]
     }
 
     with httpx.Client(timeout=timeout) as client:
