@@ -21,7 +21,7 @@ def get_query_from_prompt(user_prompt, timeout=60):
         "model": "gpt-4",
         "messages": [
             {"role": "system", "content": "You are a helpful assistant that only outputs SQL queries."},
-            {"role": "user", "content": f"Generate a SQL query for the following request: {user_prompt}. Only provide the SQL query without any additional text."}
+            {"role": "user", "content": f"Generate a SQL query to select all columns and rows from the table mentioned in the following request: {user_prompt}. Only provide the SQL query without any additional text."}
         ]
     }
 
