@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tableau Prompt Extension</title>
+    <script src="https://unpkg.com/@tableau/extensions-api"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Enter Your Prompt</h2>
+    <input type="text" id="prompt" placeholder="Enter your prompt here">
+    <button id="submitPrompt">Submit</button>
+
+    <div id="vizContainer"></div>
+
+    <script>
+        $(document).ready(function() {
+            tableau.extensions.initializeAsync().then(function() {
+                $('#submitPrompt').click(function() {
+                    var prompt = $('#prompt').val();
+                    $.ajax({
+                        url: 'http://localhost:5000/fetch_data', // Update with your backend URL
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ prompt: prompt }),
+                        success: function(response) {
+                            var data = JSON.parse(response);
+                            createVisualization(data);
+                        }
+                    });
+                });
+            });
+        });
+
+        function createVisualization(data) {
+            // Remove previous viz if it exists
+            if (window.viz) {
+                window.viz.dispose();
+            }
+
+            // Create new viz with the fetched data
+            var containerDiv = document.getElementById('vizContainer');
+            var options = {
+                width: '800px',
+                height: '600px',
+                data: data,
+                showTabs: false,
+                hideToolbar: true
+            };
+            var viz = new tableau.Viz(containerDiv, "URL_TO_YOUR_DASHBOARD", options); // Update with your Tableau dashboard URL
+            window.viz = viz;
+        }
+    </script>
+</body>
+</html>
