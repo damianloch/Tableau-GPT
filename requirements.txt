@@ -4,3 +4,4 @@ flask
 openai
 httpx 
 psycopg2-binary
+python-dotenv

@@ -3,8 +3,14 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 import openai
 import httpx
+from dotenv import load_dotenv
+import os
 
-openai.api_key = 'sk-proj-8W1tHA2pEDS5VTVw0rDHT3BlbkFJN0mGTTl6JbkhUqBJ81Wo'
+# Load environment variables from .env file
+load_dotenv()
+
+# Set the API key from the environment variable
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 def get_query_from_prompt(user_prompt, timeout=60):
     headers = {
