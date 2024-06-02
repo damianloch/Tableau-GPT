@@ -2,8 +2,8 @@
 <extension version="1.0">
   <name>Prompt Extension</name>
   <description>Extension to input a prompt and generate a graph</description>
-  <url>http://your-web-server.com/extension.html</url>
-  <icon>http://your-web-server.com/icon.png</icon>
+  <url>http://localhost:8000/extension.html</url>
+  <icon>http://localhost:8000/icon.png</icon>
   <permissions>
     <dataSources>full</dataSources>
   </permissions>
