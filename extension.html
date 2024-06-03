@@ -23,8 +23,10 @@
                         contentType: 'application/json',
                         data: JSON.stringify({ prompt: prompt }),
                         success: function(response) {
-                            var data = JSON.parse(response);
-                            createVisualization(data);
+                            createVisualization(response);
+                        },
+                        error: function(error) {
+                            console.error("Error:", error);
                         }
                     });
                 });
