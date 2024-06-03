@@ -8,7 +8,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h2>Enter Your Prompt v1</h2>
+    <h2>Enter Your Prompt v2</h2>
     <input type="text" id="prompt" placeholder="Enter your prompt here">
     <button id="submitPrompt">Submit</button>
 
@@ -19,7 +19,7 @@
             tableau.extensions.initializeAsync().then(function() {
                 $('#submitPrompt').click(function() {
                     // Trigger the visualization creation when the button is pressed
-                    createVisualization("https://public.tableau.com/views/GPT-Demo-test/sales_data?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link");
+                    createVisualization("https://public.tableau.com/views/GPT-Demo-test/sales_data");
                 });
             });
         });
@@ -41,11 +41,12 @@
             };
 
             // Create new viz with the provided Tableau URL
-            window.viz = new tableau.Viz(containerDiv, "https://public.tableau.com/views/GPT-Demo-test/sales_data?:language=en-US&publish=yes&:sid=&:display_count=n&:origin=viz_share_link", options);
+            window.viz = new tableau.Viz(containerDiv, tableauUrl, options);
         }
     </script>
 </body>
 </html>
+
 
 
 <!-- <!DOCTYPE html>
