@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau Prompt Extension</title>
-    <script src="https://unpkg.com/@tableau/extensions-api"></script>
+    <script src="https://unpkg.com/@tableau/extensions-api"></script> 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -10,46 +12,49 @@
     <input type="text" id="prompt" placeholder="Enter your prompt here">
     <button id="submitPrompt">Submit</button>
 
-    <div id="vizContainer"></div>
+    <div id="vizContainer" style="width:800px; height:600px;"></div>
 
     <script>
         $(document).ready(function() {
             tableau.extensions.initializeAsync().then(function() {
                 $('#submitPrompt').click(function() {
-                    var prompt = $('#prompt').val();
                     $.ajax({
                         url: 'http://localhost:5000/fetch_data', // Update with your backend URL
                         type: 'POST',
                         contentType: 'application/json',
-                        data: JSON.stringify({ prompt: prompt }),
                         success: function(response) {
-                            createVisualization(response);
+                            if (response.error) {
+                                console.error("Error: ", response.error);
+                            } else {
+                                createVisualization(response.tableauUrl);
+                            }
                         },
                         error: function(error) {
-                            console.error("Error:", error);
+                            console.error("Error fetching data: ", error);
                         }
                     });
                 });
             });
         });
 
-        function createVisualization(data) {
+        function createVisualization(tableauUrl) {
             // Remove previous viz if it exists
             if (window.viz) {
                 window.viz.dispose();
             }
 
-            // Create new viz with the fetched data
             var containerDiv = document.getElementById('vizContainer');
+
+            // Set options for embedding Tableau visualization
             var options = {
-                width: '800px',
-                height: '600px',
-                data: data,
-                showTabs: false,
-                hideToolbar: true
+                hideTabs: true,
+                onFirstInteractive: function () {
+                    console.log("Tableau visualization is ready.");
+                }
             };
-            var viz = new tableau.Viz(containerDiv, "URL_TO_YOUR_DASHBOARD", options); // Update with your Tableau dashboard URL
-            window.viz = viz;
+
+            // Create new viz with the provided Tableau URL
+            window.viz = new tableau.Viz(containerDiv, tableauUrl, options);
         }
     </script>
 </body>
