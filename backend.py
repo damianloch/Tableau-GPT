@@ -44,7 +44,10 @@ def fetch_data():
     query = get_query_from_prompt(prompt)
     with engine.connect() as connection:
         data = pd.read_sql(text(query), connection)
-    return data.to_json(orient='records')
+    
+    tableau_url = "https://prod-ca-a.online.tableau.com/#/site/damianloch3e5bf99f5a/views/Book1/Dashboard1?:iid=1"
+    return jsonify({"tableauUrl": tableau_url})
+    #return data.to_json(orient='records')
 
 if __name__ == "__main__":
     app.run(debug=True)
