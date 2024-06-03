@@ -20,7 +20,7 @@ def fetch_data():
     ]
     response = {
         "data": sales_data,
-        "tableauUrl": "https://public.tableau.com/views/YOUR_VIEW"  # Update with your Tableau view URL
+        "tableauUrl": "https://public.tableau.com/app/profile/jocelyne.li/viz/GPT-Demo-test/sales_data?publish=yes"  # Update with your Tableau view URL
     }
     return jsonify(response)
 
