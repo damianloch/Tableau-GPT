@@ -13,11 +13,7 @@
     <div id="vizContainer" style="width:800px; height:600px;"></div>
 
     <script>
-        $(document).ready(function() {
-            tableau.extensions.initializeAsync().then(function() {
-                createVisualization("https://public.tableau.com/app/profile/jocelyne.li/viz/GPT-Demo-test/sales_data?publish=yes");
-            });
-        });
+        createVisualization("https://public.tableau.com/app/profile/jocelyne.li/viz/GPT-Demo-test/sales_data?publish=yes");
 
         function createVisualization(tableauUrl) {
             // Remove previous viz if it exists
