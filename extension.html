@@ -4,6 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau Prompt Extension</title>
+    <script src="https://unpkg.com/@tableau/extensions-api"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Sales Data Visualization</h2>
+
+    <div id="vizContainer" style="width:800px; height:600px;"></div>
+
+    <script>
+        $(document).ready(function() {
+            tableau.extensions.initializeAsync().then(function() {
+                createVisualization("https://public.tableau.com/app/profile/jocelyne.li/viz/GPT-Demo-test/sales_data?publish=yes");
+            });
+        });
+
+        function createVisualization(tableauUrl) {
+            // Remove previous viz if it exists
+            if (window.viz) {
+                window.viz.dispose();
+            }
+
+            var containerDiv = document.getElementById('vizContainer');
+
+            // Set options for embedding Tableau visualization
+            var options = {
+                hideTabs: true,
+                onFirstInteractive: function () {
+                    console.log("Tableau visualization is ready.");
+                }
+            };
+
+            // Create new viz with the provided Tableau URL
+            window.viz = new tableau.Viz(containerDiv, tableauUrl, options);
+        }
+    </script>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Prompt Extension</title>
     <script src="https://unpkg.com/@tableau/extensions-api"></script> 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -58,4 +103,4 @@
         }
     </script>
 </body>
-</html>
+</html> -->
