@@ -8,13 +8,15 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h2>Enter Your Prompt v2</h2>
+    <h2>Enter Your Prompt v3</h2>
     <input type="text" id="prompt" placeholder="Enter your prompt here">
     <button id="submitPrompt">Submit</button>
 
     <div id="vizContainer" style="width:800px; height:600px;"></div>
 
     <script>
+        createVisualization("https://public.tableau.com/views/GPT-Demo-test/sales_data");
+
         $(document).ready(function() {
             tableau.extensions.initializeAsync().then(function() {
                 $('#submitPrompt').click(function() {
