@@ -4,6 +4,33 @@
   <!-- Have title be a variable -->
   <title>Tableau Extension emb3</title>
   <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #app {
+      text-align: center;
+    }
+    #prompt {
+      width: 400px;
+      padding: 10px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #tableauViz {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <div id="app">
