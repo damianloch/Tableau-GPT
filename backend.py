@@ -54,6 +54,15 @@ def get_query_from_prompt(user_prompt, timeout=60):
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})  # Update with your GitHub Pages URL
 
+@app.before_request
+def before_request():
+    if request.method == 'OPTIONS':
+        response = app.make_response('')
+        response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
+        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        return response
+
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
 engine = create_engine(DATABASE_URL)
