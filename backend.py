@@ -5,6 +5,7 @@ import openai
 import httpx
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,6 +34,7 @@ def get_query_from_prompt(user_prompt, timeout=60):
             raise Exception("Failed to generate text: " + response.text)
 
 app = Flask(__name__)
+CORS(app)
 
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
@@ -47,7 +49,7 @@ def fetch_data():
     
     tableau_url = "https://prod-ca-a.online.tableau.com/#/site/damianloch3e5bf99f5a/views/Book1/Dashboard1?:iid=1"
     return jsonify({"tableauUrl": tableau_url})
-    #return data.to_json(orient='records')
+    # return data.to_json(orient='records')
 
 if __name__ == "__main__":
     app.run(debug=True)
