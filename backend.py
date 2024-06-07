@@ -65,6 +65,7 @@ def fetch_data():
         response.headers.add('Access-Control-Allow-Origin', 'https://damianloch.github.io')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
 
     try:
@@ -80,10 +81,12 @@ def fetch_data():
         data_json = data.to_dict(orient='records')
         response = jsonify({"data": data_json})
         response.headers.add('Access-Control-Allow-Origin', 'https://damianloch.github.io')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
     except Exception as e:
         response = jsonify({"error": str(e)})
         response.headers.add('Access-Control-Allow-Origin', 'https://damianloch.github.io')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 500
 
 if __name__ == "__main__":
