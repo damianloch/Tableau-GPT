@@ -51,9 +51,8 @@ def get_query_from_prompt(user_prompt, timeout=60):
         else:
             raise Exception("Failed to generate text: " + response.text)
 
-
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io/Tableau-GPT-Demo"}})  
+CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})  # Update with your GitHub Pages URL
 
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
@@ -71,10 +70,14 @@ def fetch_data():
             data = pd.read_sql(text(query), connection)
         
         # Convert data to the format required by your frontend
-        data_json = data.to_json(orient='records')
-        return jsonify(data_json)
+        data_json = data.to_dict(orient='records')
+        response = jsonify({"data": data_json})
+        response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
+        return response
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        response = jsonify({"error": str(e)})
+        response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
+        return response, 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
