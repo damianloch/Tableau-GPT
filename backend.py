@@ -53,7 +53,7 @@ def get_query_from_prompt(user_prompt, timeout=60):
 
 
 app = Flask(__name__)
-CORS(app, origins=["https://damianloch.github.io/Tableau-GPT-Demo"])  # Update with your GitHub Pages URL
+CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io/Tableau-GPT-Demo"}})  
 
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
