@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- Turn table title into a variable -->
-  <title>Tableau Extension</title> 
-  <script src="https://tableau.github.io/extensions-api/1.4.0/tableau.extensions.1.4.0.min.js"></script>
+  <title>Tableau Extension</title>
+  <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
 </head>
 <body>
   <div id="app">
     <input type="text" id="prompt" placeholder="Enter your prompt">
     <button onclick="sendPrompt()">Submit</button>
-    <div id="tableauViz"></div>
+    <div id="tableauViz" style="width: 800px; height: 600px;"></div>
   </div>
 
   <script>
@@ -20,23 +19,27 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
-      const data = await response.json();
-      const tableauUrl = data.tableauUrl;
-      loadTableauVisualization(tableauUrl);
+      if (response.ok) {
+        const data = await response.json();
+        const tableauUrl = data.tableauUrl;
+        loadTableauVisualization(tableauUrl);
+      } else {
+        console.error('Failed to fetch data');
+      }
     }
 
     function loadTableauVisualization(url) {
       const vizDiv = document.getElementById('tableauViz');
       vizDiv.innerHTML = ''; // Clear previous visualization if any
 
-      const options = {
-        width: vizDiv.clientWidth,
-        height: vizDiv.clientHeight,
-        hideTabs: true,
-        hideToolbar: true
-      };
+      const viz = document.createElement('tableau-viz');
+      viz.setAttribute('src', url);
+      viz.setAttribute('toolbar', 'hidden');
+      viz.setAttribute('hide-tabs', '');
+      viz.style.width = "100%";
+      viz.style.height = "600px";
 
-      new tableau.Viz(vizDiv, url, options);
+      vizDiv.appendChild(viz);
     }
   </script>
 </body>
