@@ -35,7 +35,7 @@ def get_query_from_prompt(user_prompt, timeout=60):
 app = Flask(__name__)
 
 # Replace with your actual database connection URL
-DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
+DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
 engine = create_engine(DATABASE_URL)
 
 @app.route('/fetch_data', methods=['POST'])
