@@ -42,7 +42,7 @@
   <script>
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
-      const response = await fetch('http://localhost:5000/fetch_data', {
+      const response = await fetch('http://localhost:5001/fetch_data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
