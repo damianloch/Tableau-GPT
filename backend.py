@@ -21,8 +21,26 @@ def get_query_from_prompt(user_prompt, timeout=60):
     data = {
         "model": "gpt-4",
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant that only outputs SQL queries."},
-            {"role": "user", "content": f"Generate a SQL query to select all columns and rows from the table mentioned in the following request: {user_prompt}. Only provide the SQL query without any additional text."}
+            {"role": "system", "content": """
+                You are a helpful assistant that only outputs SQL queries for a PostgreSQL database.
+                The database contains the following tables:
+                - monthly_revenue (columns: month, revenue)
+                - monthly_expenses (columns: month, expenses)
+                - quarterly_profits (columns: quarter, profit)
+                - annual_revenue (columns: year, revenue)
+                - annual_expenses (columns: year, expenses)
+                - monthly_net_income (columns: month, net_income)
+                - monthly_cash_flow (columns: month, cash_flow)
+                - quarterly_operating_costs (columns: quarter, operating_costs)
+                - annual_dividends (columns: year, dividends)
+                Only generate queries that reference these tables and their columns.
+                Example prompts and queries:
+                - "Plot a line chart to show the annual revenue growth from 2021 to 2023."
+                  SQL: SELECT * FROM annual_revenue WHERE year BETWEEN '2021-01-01' AND '2023-01-01';
+                - "Create a line graph to illustrate the monthly net income for each month in 2023."
+                  SQL: SELECT * FROM monthly_net_income WHERE month BETWEEN '2023-01-01' AND '2023-12-01';
+                """},
+            {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ]
     }
 
@@ -33,8 +51,9 @@ def get_query_from_prompt(user_prompt, timeout=60):
         else:
             raise Exception("Failed to generate text: " + response.text)
 
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://your-github-username.github.io"])  # Update with your GitHub Pages URL
 
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
@@ -42,14 +61,20 @@ engine = create_engine(DATABASE_URL)
 
 @app.route('/fetch_data', methods=['POST'])
 def fetch_data():
-    prompt = request.json.get('prompt')
-    query = get_query_from_prompt(prompt)
-    with engine.connect() as connection:
-        data = pd.read_sql(text(query), connection)
-    
-    tableau_url = "https://prod-ca-a.online.tableau.com/#/site/damianloch3e5bf99f5a/views/Book1/Dashboard1?:iid=1"
-    return jsonify({"tableauUrl": tableau_url})
-    # return data.to_json(orient='records')
+    try:
+        prompt = request.json.get('prompt')
+        if not prompt:
+            return jsonify({"error": "No prompt provided"}), 400
+
+        query = get_query_from_prompt(prompt)
+        with engine.connect() as connection:
+            data = pd.read_sql(text(query), connection)
+        
+        # Convert data to the format required by your frontend
+        data_json = data.to_json(orient='records')
+        return jsonify(data_json)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

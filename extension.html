@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Have title be a variable -->
   <title>Tableau Extension emb3</title>
   <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
     }
     #app {
       text-align: center;
+      width: 100%;
+      max-width: 800px;
     }
     #prompt {
       width: 400px;
@@ -29,6 +31,8 @@
     }
     #tableauViz {
       margin-top: 20px;
+      width: 100%;
+      height: 600px;
     }
   </style>
 </head>
@@ -36,7 +40,7 @@
   <div id="app">
     <input type="text" id="prompt" placeholder="Enter your prompt">
     <button onclick="sendPrompt()">Submit</button>
-    <div id="tableauViz" style="width: 800px; height: 600px;"></div>
+    <div id="tableauViz"></div>
   </div>
 
   <script>
@@ -49,21 +53,22 @@
       });
       if (response.ok) {
         const data = await response.json();
-        const tableauUrl = data.tableauUrl;
-        loadTableauVisualization(tableauUrl);
+        loadTableauVisualization(data);
       } else {
         console.error('Failed to fetch data');
       }
     }
 
-    function loadTableauVisualization(url) {
+    function loadTableauVisualization(data) {
       const vizDiv = document.getElementById('tableauViz');
       vizDiv.innerHTML = ''; // Clear previous visualization if any
 
       const viz = document.createElement('tableau-viz');
-      viz.setAttribute('src', url);
+      viz.setAttribute('src', 'your_tableau_dashboard_url'); // Replace with your actual Tableau dashboard URL
       viz.setAttribute('toolbar', 'hidden');
       viz.setAttribute('hide-tabs', '');
+      viz.setAttribute('data', JSON.stringify(data)); // Pass the data to Tableau
+
       viz.style.width = "100%";
       viz.style.height = "600px";
 
