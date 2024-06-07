@@ -1,7 +1,7 @@
 import requests
 
 def test_fetch_data():
-    url = "http://127.0.0.1:5000/fetch_data"  # Ensure it matches your Flask server port
+    url = "http://127.0.0.1:3000/api/fetch_data"  # Ensure it matches your Flask server port
     headers = {"Content-Type": "application/json"}
     prompt = "Create a line graph to illustrate the monthly net income for each month in 2023."
     response = requests.post(url, json={"prompt": prompt}, headers=headers)
