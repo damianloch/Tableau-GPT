@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify
-from flask_wtf.csrf import CSRFProtect, generate_csrf
+from flask_cors import CORS
 from sqlalchemy import create_engine, text
 import pandas as pd
 import openai
 import httpx
 from dotenv import load_dotenv
 import os
-from flask_cors import CORS
 import logging
 
 # Load environment variables from .env file
@@ -57,31 +56,13 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
-csrf = CSRFProtect(app)
 CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})
-
-@app.before_request
-def before_request():
-    if request.method == 'OPTIONS':
-        response = app.make_response('')
-        response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
-        response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRFToken")
-        return response
-
-@app.route('/csrf-token', methods=['GET'])
-def get_csrf_token():
-    response = jsonify({'csrf_token': generate_csrf()})
-    response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRFToken")
-    return response
 
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
 engine = create_engine(DATABASE_URL)
 
 @app.route('/fetch_data', methods=['POST'])
-@csrf.exempt  # Exempt this endpoint from CSRF protection
 def fetch_data():
     try:
         prompt = request.json.get('prompt')
@@ -94,13 +75,9 @@ def fetch_data():
         
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
-        response = jsonify({"data": data_json})
-        response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
-        return response
+        return jsonify({"data": data_json})
     except Exception as e:
-        response = jsonify({"error": str(e)})
-        response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
-        return response, 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
