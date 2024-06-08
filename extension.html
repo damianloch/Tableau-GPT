@@ -44,11 +44,21 @@
   </div>
 
   <script>
+    async function getCsrfToken() {
+      const response = await fetch('http://localhost:5000/csrf-token');
+      const data = await response.json();
+      return data.csrf_token;
+    }
+
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
+      const csrfToken = await getCsrfToken();
       const response = await fetch('http://localhost:5000/fetch_data', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken 
+        },
         body: JSON.stringify({ prompt })
       });
       if (response.ok) {
