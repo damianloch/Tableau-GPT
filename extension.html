@@ -29,7 +29,7 @@
       font-size: 16px;
       cursor: pointer;
     }
-    #tableauViz, #dataTable {
+    #tableauViz {
       margin-top: 20px;
       width: 100%;
       height: 600px;
@@ -37,14 +37,15 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 20px 0;
-    }
-    table, th, td {
-      border: 1px solid black;
+      margin-top: 20px;
     }
     th, td {
+      border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
     }
   </style>
 </head>
@@ -57,11 +58,11 @@
   </div>
 
   <script>
-    alert('Script loaded'); // Initial alert to check if script is loaded
+    console.log('Extension script loaded'); // Debugging log
 
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
-      console.log('Prompt:', prompt); // Log the prompt value
+      console.log('Prompt:', prompt); // Log the prompt value for debugging
       const response = await fetch('http://localhost:5000/fetch_data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
