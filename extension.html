@@ -60,7 +60,7 @@
         if (response.ok) {
           const data = await response.json();
           console.log('Data received:', data);
-          loadTableauVisualization();  // Removed data parameter here
+          loadTableauVisualization(data);
         } else {
           console.error('Failed to fetch data:', response.statusText);
         }
@@ -69,8 +69,8 @@
       }
     }
 
-    function loadTableauVisualization() {
-      console.log('Loading Tableau visualization');
+    function loadTableauVisualization(data) {
+      console.log('Loading Tableau visualization with data:', data);
       const vizDiv = document.getElementById('tableauViz');
       vizDiv.innerHTML = ''; // Clear previous visualization if any
 
@@ -80,11 +80,11 @@
       viz.setAttribute('height', '840');
       viz.setAttribute('hide-tabs', 'true');
       viz.setAttribute('toolbar', 'bottom');
-      // Remove this line: viz.setAttribute('data', JSON.stringify(data));
+      // Log the attributes to check if they're being set correctly
+      console.log('Tableau viz attributes:', viz.getAttribute('src'), viz.getAttribute('width'), viz.getAttribute('height'), viz.getAttribute('hide-tabs'), viz.getAttribute('toolbar'));
 
       viz.addEventListener('firstinteractive', function () {
         console.log('Tableau visualization loaded');
-        // Here you can interact with the Tableau viz object if needed
       });
 
       vizDiv.appendChild(viz);
