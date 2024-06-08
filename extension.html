@@ -78,15 +78,16 @@
       viz.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
       viz.setAttribute('width', '1000');
       viz.setAttribute('height', '840');
-      viz.setAttribute('hide-tabs', '');
+      viz.setAttribute('hide-tabs', 'true');
       viz.setAttribute('toolbar', 'bottom');
-      viz.setAttribute('data', JSON.stringify(data)); // Pass the data to Tableau
+      // Remove this line: viz.setAttribute('data', JSON.stringify(data));
 
-      viz.style.width = "100%";
-      viz.style.height = "600px";
+      viz.addEventListener('firstinteractive', function () {
+        console.log('Tableau visualization loaded');
+        // Here you can interact with the Tableau viz object if needed
+      });
 
       vizDiv.appendChild(viz);
-      console.log('Tableau visualization loaded');
     }
   </script>
 </body>
