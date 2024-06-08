@@ -29,10 +29,22 @@
       font-size: 16px;
       cursor: pointer;
     }
-    #tableauViz {
+    #tableauViz, #dataTable {
       margin-top: 20px;
       width: 100%;
       height: 600px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
     }
   </style>
 </head>
@@ -41,38 +53,57 @@
     <input type="text" id="prompt" placeholder="Enter your prompt">
     <button onclick="sendPrompt()">Submit</button>
     <div id="tableauViz"></div>
+    <div id="dataTable"></div>
   </div>
 
   <script>
+    alert('Script loaded'); // Initial alert to check if script is loaded
+
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
+      console.log('Prompt:', prompt); // Log the prompt value
       const response = await fetch('http://localhost:5000/fetch_data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
+      console.log('Response status:', response.status); // Log the response status
       if (response.ok) {
         const data = await response.json();
-        loadTableauVisualization(data);
+        console.log('Data received:', data); // Log the received data
+        displayDataTable(data.data);
       } else {
         console.error('Failed to fetch data');
       }
     }
 
-    function loadTableauVisualization(data) {
-      const vizDiv = document.getElementById('tableauViz');
-      vizDiv.innerHTML = ''; // Clear previous visualization if any
+    function displayDataTable(data) {
+      console.log('Displaying data:', data); // Log the data to be displayed
+      const dataTable = document.getElementById('dataTable');
+      dataTable.innerHTML = ''; // Clear previous table if any
 
-      const viz = document.createElement('tableau-viz');
-      viz.setAttribute('src', 'your_tableau_dashboard_url'); // Replace with your actual Tableau dashboard URL
-      viz.setAttribute('toolbar', 'hidden');
-      viz.setAttribute('hide-tabs', '');
-      viz.setAttribute('data', JSON.stringify(data)); // Pass the data to Tableau
+      const table = document.createElement('table');
+      const header = table.createTHead();
+      const headerRow = header.insertRow(0);
 
-      viz.style.width = "100%";
-      viz.style.height = "600px";
+      // Assuming all objects have the same keys
+      const keys = Object.keys(data[0]);
 
-      vizDiv.appendChild(viz);
+      keys.forEach((key, index) => {
+        const cell = headerRow.insertCell(index);
+        cell.outerHTML = `<th>${key}</th>`;
+      });
+
+      const body = table.createTBody();
+      data.forEach((row) => {
+        const bodyRow = body.insertRow();
+        keys.forEach((key, index) => {
+          const cell = bodyRow.insertCell(index);
+          cell.innerText = row[key];
+        });
+      });
+
+      dataTable.appendChild(table);
     }
   </script>
 </body>
