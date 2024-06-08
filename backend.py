@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
@@ -6,7 +7,6 @@ import openai
 import httpx
 from dotenv import load_dotenv
 import os
-import logging
 
 # Load environment variables from .env file
 load_dotenv()
@@ -50,6 +50,7 @@ def get_query_from_prompt(user_prompt, timeout=60):
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content'].strip()
         else:
+            logging.error(f"Failed to generate text: {response.text}")
             raise Exception("Failed to generate text: " + response.text)
 
 logging.basicConfig(level=logging.DEBUG)
@@ -59,24 +60,30 @@ app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  #
 CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})
 
 # Replace with your actual database connection URL
-DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
+DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
+
 engine = create_engine(DATABASE_URL)
 
 @app.route('/fetch_data', methods=['POST'])
 def fetch_data():
     try:
         prompt = request.json.get('prompt')
+        logging.debug(f"Received prompt: {prompt}")
         if not prompt:
+            logging.error("No prompt provided")
             return jsonify({"error": "No prompt provided"}), 400
 
         query = get_query_from_prompt(prompt)
+        logging.debug(f"Generated query: {query}")
         with engine.connect() as connection:
             data = pd.read_sql(text(query), connection)
-        
+            logging.debug(f"Query result: {data}")
+
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
         return jsonify({"data": data_json})
     except Exception as e:
+        logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
