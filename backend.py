@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from sqlalchemy import create_engine, text
 import pandas as pd
 import openai
@@ -56,7 +56,7 @@ def get_query_from_prompt(user_prompt, timeout=60):
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with your actual secret key
+app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
 csrf = CSRFProtect(app)
 CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})
 
@@ -71,7 +71,7 @@ def before_request():
 
 @app.route('/csrf-token', methods=['GET'])
 def get_csrf_token():
-    response = jsonify({'csrf_token': csrf.generate_csrf()})
+    response = jsonify({'csrf_token': generate_csrf()})
     response.headers.add("Access-Control-Allow-Origin", "https://damianloch.github.io")
     response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRFToken")
     return response

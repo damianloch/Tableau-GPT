@@ -45,7 +45,12 @@
 
   <script>
     async function getCsrfToken() {
-      const response = await fetch('http://localhost:5000/csrf-token');
+      const response = await fetch('http://localhost:5000/csrf-token', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       const data = await response.json();
       return data.csrf_token;
     }
