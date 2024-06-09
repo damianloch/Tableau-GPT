@@ -69,7 +69,7 @@
           console.error('Failed to fetch data:', response.statusText);
         }
       } catch (error) {
-        console.error('Error occurred:', error);
+        console.error('Error occurred during fetch:', error);
       }
     }
 
@@ -78,21 +78,30 @@
       const vizDiv = document.getElementById('tableauViz');
       vizDiv.innerHTML = ''; // Clear previous visualization if any
 
-      const viz = document.createElement('tableau-viz');
-      viz.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
-      viz.setAttribute('width', '1000');
-      viz.setAttribute('height', '840');
-      viz.setAttribute('hide-tabs', 'true');
-      viz.setAttribute('toolbar', 'bottom');
+      if (!viz) {
+        try {
+          const viz = document.createElement('tableau-viz');
+          viz.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
+          viz.setAttribute('width', '1000');
+          viz.setAttribute('height', '840');
+          viz.setAttribute('hide-tabs', 'true');
+          viz.setAttribute('toolbar', 'bottom');
 
-      // Log the attributes to check if they're being set correctly
-      console.log('Tableau viz attributes:', viz.getAttribute('src'), viz.getAttribute('width'), viz.getAttribute('height'), viz.getAttribute('hide-tabs'), viz.getAttribute('toolbar'));
+          // Log the attributes to check if they're being set correctly
+          console.log('Tableau viz attributes:', viz.getAttribute('src'), viz.getAttribute('width'), viz.getAttribute('height'), viz.getAttribute('hide-tabs'), viz.getAttribute('toolbar'));
 
-      viz.addEventListener('firstinteractive', function () {
-        console.log('Tableau visualization loaded');
-      });
+          viz.addEventListener('firstinteractive', function () {
+            console.log('Tableau visualization loaded');
+          });
 
-      vizDiv.appendChild(viz);
+          vizDiv.appendChild(viz);
+          console.log('Tableau Viz object created and loaded');
+        } catch (error) {
+          console.error('Error creating Tableau Viz:', error);
+        }
+      } else {
+        console.log('Tableau Viz object already exists');
+      }
     }
   </script>
 </body>
