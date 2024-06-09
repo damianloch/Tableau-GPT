@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tableau Extension emb3</title>
+  <title>Tableau Extension Demo</title>
   <script type="module" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
@@ -46,15 +46,19 @@
   <script>
     console.log('Extension script loaded');
 
+    let viz;
+
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
       console.log('Prompt entered:', prompt);
+
       try {
         const response = await fetch('http://localhost:5000/fetch_data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt })
         });
+
         console.log('Response status:', response.status);
 
         if (response.ok) {
@@ -80,6 +84,7 @@
       viz.setAttribute('height', '840');
       viz.setAttribute('hide-tabs', 'true');
       viz.setAttribute('toolbar', 'bottom');
+
       // Log the attributes to check if they're being set correctly
       console.log('Tableau viz attributes:', viz.getAttribute('src'), viz.getAttribute('width'), viz.getAttribute('height'), viz.getAttribute('hide-tabs'), viz.getAttribute('toolbar'));
 
