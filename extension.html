@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Tableau Extension Demo</title>
-  <script type="module" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+  <script type="text/javascript" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
       display: flex;
@@ -78,24 +78,18 @@
       const vizDiv = document.getElementById('tableauViz');
       vizDiv.innerHTML = ''; // Clear previous visualization if any
 
-      try {
-        const vizElement = document.createElement('tableau-viz');
-        vizElement.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
-        vizElement.setAttribute('width', '1000');
-        vizElement.setAttribute('height', '840');
-        vizElement.setAttribute('hide-tabs', 'true');
-        vizElement.setAttribute('toolbar', 'bottom');
-
-        // Log the attributes to check if they're being set correctly
-        console.log('Tableau viz attributes:', vizElement.getAttribute('src'), vizElement.getAttribute('width'), vizElement.getAttribute('height'), vizElement.getAttribute('hide-tabs'), vizElement.getAttribute('toolbar'));
-
-        vizElement.addEventListener('firstinteractive', function (event) {
+      const vizUrl = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1'; // Replace with your Tableau Online dashboard link
+      const options = {
+        hideTabs: true,
+        onFirstInteractive: function () {
           console.log('Tableau visualization loaded');
-          viz = event.target; // Store the viz object globally
+          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
           updateVizData(data); // Pass the fetched data to update the viz
-        });
+        }
+      };
 
-        vizDiv.appendChild(vizElement);
+      try {
+        viz = new tableau.Viz(vizDiv, vizUrl, options);
         console.log('Tableau Viz object created and loaded');
       } catch (error) {
         console.error('Error creating Tableau Viz:', error);
