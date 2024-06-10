@@ -43,9 +43,7 @@
     <div id="tableauViz"></div>
   </div>
 
-  <script type="module">
-    import * as tableau from 'https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js';
-
+  <script type="text/javascript">
     let viz; // Global variable to store the viz object
 
     async function sendPrompt() {
@@ -83,7 +81,7 @@
         hideTabs: true,
         onFirstInteractive: function () {
           console.log('Tableau visualization loaded');
-          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
+          viz = vizElement; // Store the viz object globally
           updateVizData(data); // Pass the fetched data to update the viz
         }
       };
