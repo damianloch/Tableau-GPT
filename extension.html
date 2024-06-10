@@ -43,7 +43,9 @@
     <div id="tableauViz"></div>
   </div>
 
-  <script>
+  <script type="module">
+    import * as tableau from 'https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js';
+
     let viz; // Global variable to store the viz object
 
     async function sendPrompt() {
@@ -122,6 +124,9 @@
         console.error('Viz object is not defined.');
       }
     }
+
+    // Attach sendPrompt to the global scope to make it callable from HTML
+    window.sendPrompt = sendPrompt;
   </script>
 </body>
 </html>
