@@ -85,7 +85,7 @@
 
       // Extracting the data for the chart
       const labels = data.map(item => new Date(item.month));
-      const values = data.map(item => item.net_income);
+      const values = data.map(item => item.revenue || item.net_income || item.cash_flow || item.profit);
 
       // Display the chart container
       document.getElementById('chartContainer').style.display = 'block';
@@ -96,7 +96,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: 'Net Income',
+            label: 'Value',
             data: values,
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
