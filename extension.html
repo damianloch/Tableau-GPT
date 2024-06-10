@@ -114,7 +114,7 @@
       document.getElementById('chartContainer').style.display = 'block';
 
       // Clear any previous chart
-      if (window.myChart) {
+      if (window.myChart && typeof window.myChart.destroy === 'function') {
         window.myChart.destroy();
       }
 
