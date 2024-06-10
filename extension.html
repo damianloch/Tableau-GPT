@@ -50,6 +50,8 @@
           // Add the viz object to the DOM
           vizDiv.appendChild(viz);
 
+          updateVizData(data);
+
           // Wait for the visualization to be fully loaded before updating it
           viz.addEventListener('firstInteractive', function () {
             console.log('Tableau visualization loaded');
