@@ -135,9 +135,14 @@
         options: {
           scales: {
             x: {
-              type: chartType === 'bar' ? 'category' : 'time',
+              type: 'time',
               time: {
-                unit: chartType === 'bar' ? undefined : 'month'
+                unit: chartType === 'bar' ? 'quarter' : 'month',
+                tooltipFormat: 'yyyy-MM-dd', // Format for tooltips
+                displayFormats: {
+                  quarter: 'yyyy-[Q]Q', // Format for quarters
+                  month: 'yyyy-MM', // Format for months
+                }
               },
               adapters: {
                 date: {
@@ -147,6 +152,15 @@
             },
             y: {
               beginAtZero: true
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return tooltipItem.raw; // Use raw data for tooltip
+                }
+              }
             }
           }
         }
