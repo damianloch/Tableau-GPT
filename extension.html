@@ -1,112 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tableau Extension Demo</title>
-  <!-- Load the Tableau JavaScript API -->
-  <script type="module">
-    import { TableauViz } from 'https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js';
-
-    document.addEventListener("DOMContentLoaded", function () {
-      let viz; // Global variable to store the viz object
-
-      async function sendPrompt() {
-        const prompt = document.getElementById('prompt').value;
-        console.log('Prompt entered:', prompt);
-
-        try {
-          const response = await fetch('http://localhost:5000/fetch_data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
-          });
-
-          console.log('Response status:', response.status);
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Data received:', data);
-            loadTableauVisualization(data.data);
-          } else {
-            console.error('Failed to fetch data:', response.statusText);
-          }
-        } catch (error) {
-          console.error('Error occurred during fetch:', error);
-        }
-      }
-
-      function loadTableauVisualization(data) {
-        console.log('Loading Tableau visualization with data:', data);
-        const vizDiv = document.getElementById('tableauViz');
-        vizDiv.innerHTML = ''; // Clear previous visualization if any
-
-        try {
-          console.log('Tableau visualization loaded TEST');
-          viz = new TableauViz();
-          viz.src = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1';
-          viz.toolbar = 'hidden';
-          viz.height = '600px';
-          viz.width = '100%';
-
-          // Add the viz object to the DOM
-          vizDiv.appendChild(viz);
-
-          updateVizData(data);
-
-          // Wait for the visualization to be fully loaded before updating it
-          viz.addEventListener('firstInteractive', function () {
-            console.log('Tableau visualization loaded');
-            updateVizData(data);
-          });
-        } catch (error) {
-          console.error('Error creating Tableau Viz:', error);
-        }
-      }
-
-      async function updateVizData(data) {
-        console.log('Updating Viz data:', data);
-        if (viz) {
-          try {
-            const workbook = viz.workbook;
-            console.log('Workbook:', workbook);
-
-            const activeSheet = workbook.activeSheet;
-            console.log('Active Sheet:', activeSheet);
-
-            // Assuming your dashboard has a sheet named "LineChart"
-            const lineChartSheet = activeSheet.worksheets.find(sheet => sheet.name === "LineChart");
-
-            if (!lineChartSheet) {
-              console.error('LineChart sheet not found');
-              return;
-            }
-
-            console.log('LineChart Sheet:', lineChartSheet);
-
-            // Extracting month data for filter
-            const months = data.map(item => item.month);
-            console.log('Months for filtering:', months);
-
-            // Update the data for the line chart
-            await lineChartSheet.applyFilterAsync(
-              "Month", // The field name in your Tableau view
-              {
-                values: months,
-                updateType: tableau.FilterUpdateType.Replace
-              }
-            );
-            console.log('Line chart data updated');
-          } catch (error) {
-            console.error('Error updating line chart data:', error);
-          }
-        } else {
-          console.error('Viz object is not defined.');
-        }
-      }
-
-      // Expose the sendPrompt function to the global scope so it can be called from the button click
-      window.sendPrompt = sendPrompt;
-    });
-  </script>
+  <title>Chart.js Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       display: flex;
@@ -133,10 +29,15 @@
       font-size: 16px;
       cursor: pointer;
     }
-    #tableauViz {
+    #chartContainer {
+      display: none;
       margin-top: 20px;
       width: 100%;
       height: 600px;
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
     }
   </style>
 </head>
@@ -144,7 +45,78 @@
   <div id="app">
     <input type="text" id="prompt" placeholder="Enter your prompt">
     <button onclick="sendPrompt()">Submit</button>
-    <div id="tableauViz"></div>
+    <div id="chartContainer">
+      <canvas id="myChart"></canvas>
+    </div>
   </div>
+
+  <script>
+    async function sendPrompt() {
+      const prompt = document.getElementById('prompt').value;
+      console.log('Prompt entered:', prompt);
+
+      try {
+        const response = await fetch('http://localhost:5000/fetch_data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        console.log('Response status:', response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Data received:', data);
+          displayChart(data.data);
+        } else {
+          console.error('Failed to fetch data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error occurred during fetch:', error);
+      }
+    }
+
+    function displayChart(data) {
+      console.log('Displaying chart with data:', data);
+
+      const ctx = document.getElementById('myChart').getContext('2d');
+
+      // Extracting the data for the chart
+      const labels = data.map(item => new Date(item.month).toLocaleDateString());
+      const values = data.map(item => item.net_income);
+
+      // Display the chart container
+      document.getElementById('chartContainer').style.display = 'block';
+
+      // Creating the chart
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Net Income',
+            data: values,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'month'
+              }
+            },
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+  </script>
 </body>
 </html>
