@@ -83,25 +83,53 @@
 
       const ctx = document.getElementById('myChart').getContext('2d');
 
-      // Extracting the data for the chart
-      const labels = data.map(item => new Date(item.month));
-      const values = data.map(item => item.revenue || item.net_income || item.cash_flow || item.profit);
+      // Determine chart type and data
+      let labels, values, label, chartType;
+      if (data[0].month) {
+        // Monthly data
+        labels = data.map(item => new Date(item.month));
+        if (data[0].revenue) {
+          values = data.map(item => item.revenue);
+          label = 'Monthly Revenue';
+        } else if (data[0].net_income) {
+          values = data.map(item => item.net_income);
+          label = 'Monthly Net Income';
+        }
+        chartType = 'line';
+      } else if (data[0].year) {
+        // Annual data
+        labels = data.map(item => new Date(item.year));
+        values = data.map(item => item.revenue);
+        label = 'Annual Revenue';
+        chartType = 'line';
+      } else if (data[0].quarter) {
+        // Quarterly data (bar chart)
+        labels = data.map(item => new Date(item.quarter));
+        values = data.map(item => item.profit);
+        label = 'Quarterly Profits';
+        chartType = 'bar';
+      }
 
       // Display the chart container
       document.getElementById('chartContainer').style.display = 'block';
 
+      // Clear any previous chart
+      if (window.myChart) {
+        window.myChart.destroy();
+      }
+
       // Creating the chart
-      new Chart(ctx, {
-        type: 'line',
+      window.myChart = new Chart(ctx, {
+        type: chartType,
         data: {
           labels: labels,
           datasets: [{
-            label: 'Value',
+            label: label,
             data: values,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            backgroundColor: chartType === 'bar' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(75, 192, 192, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1,
-            fill: false
+            fill: chartType !== 'bar'
           }]
         },
         options: {
@@ -109,7 +137,7 @@
             x: {
               type: 'time',
               time: {
-                unit: 'month'
+                unit: chartType === 'bar' ? 'quarter' : 'month'
               },
               adapters: {
                 date: {
