@@ -45,7 +45,7 @@
 </head>
 <body>
   <div id="app">
-    <input type="text" id="prompt" placeholder="How can I help">
+    <input type="text" id="prompt" placeholder="Enter your prompt">
     <button onclick="sendPrompt()">Submit</button>
     <div id="chartContainer">
       <canvas id="myChart"></canvas>
@@ -101,9 +101,17 @@
       const dateProperty = dateProperties.find(prop => prop in firstItem);
       if (dateProperty) {
         if (dateProperty === 'month') {
-          labels = data.map(item => luxon.DateTime.fromISO(item[dateProperty]).toFormat('yyyy-MM'));
+          labels = data.map(item => {
+            const date = luxon.DateTime.fromISO(item[dateProperty]);
+            console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
+            return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
+          });
         } else if (dateProperty === 'year') {
-          labels = data.map(item => luxon.DateTime.fromISO(item[dateProperty]).toFormat('yyyy'));
+          labels = data.map(item => {
+            const date = luxon.DateTime.fromISO(item[dateProperty]);
+            console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
+            return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
+          });
         } else {
           labels = data.map(item => item[dateProperty]);
           chartType = 'bar';
