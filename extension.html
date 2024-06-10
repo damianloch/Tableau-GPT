@@ -2,8 +2,7 @@
 <html>
 <head>
   <title>Tableau Extension Demo</title>
-  <!-- Load the Tableau JavaScript API -->
-  <script src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau-2.min.js"></script>
+  <script type="module" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
       display: flex;
@@ -78,30 +77,27 @@
       vizDiv.innerHTML = ''; // Clear previous visualization if any
 
       try {
-        const vizElement = document.createElement('div');
-        vizElement.id = 'tableauVizElement';
-        vizElement.style.width = '100%';
-        vizElement.style.height = '600px';
+        const vizElement = document.createElement('tableau-viz');
+        vizElement.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
+        vizElement.setAttribute('width', '1000');
+        vizElement.setAttribute('height', '840');
+        vizElement.setAttribute('hide-tabs', 'true');
+        vizElement.setAttribute('toolbar', 'bottom');
+
+        vizElement.addEventListener('firstinteractive', function () {
+          console.log('Tableau visualization loaded');
+          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
+          updateVizData(data); // Pass the fetched data to update the viz
+        });
+
         vizDiv.appendChild(vizElement);
-
-        const vizUrl = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1';
-
-        const options = {
-          hideTabs: true,
-          onFirstInteractive: function () {
-            console.log('Tableau visualization loaded');
-            viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
-            updateVizData(data); // Pass the fetched data to update the viz
-          }
-        };
-
-        viz = new tableau.Viz(vizElement, vizUrl, options);
         console.log('Tableau Viz object created and loaded');
       } catch (error) {
         console.error('Error creating Tableau Viz:', error);
       }
     }
 
+    
     function updateVizData(data) {
       console.log('Updating Viz data:', data);
       if (viz) {
