@@ -39,20 +39,24 @@
         const vizDiv = document.getElementById('tableauViz');
         vizDiv.innerHTML = ''; // Clear previous visualization if any
 
-        viz = new TableauViz();
-        viz.src = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1';
-        viz.toolbar = 'hidden';
-        viz.height = '600px';
-        viz.width = '100%';
+        try {
+          viz = new TableauViz();
+          viz.src = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1';
+          viz.toolbar = 'hidden';
+          viz.height = '600px';
+          viz.width = '100%';
 
-        // Add the viz object to the DOM
-        vizDiv.appendChild(viz);
+          // Add the viz object to the DOM
+          vizDiv.appendChild(viz);
 
-        // Wait for the visualization to be fully loaded before updating it
-        viz.addEventListener('firstInteractive', function () {
-          console.log('Tableau visualization loaded');
-          updateVizData(data);
-        });
+          // Wait for the visualization to be fully loaded before updating it
+          viz.addEventListener('firstInteractive', function () {
+            console.log('Tableau visualization loaded');
+            updateVizData(data);
+          });
+        } catch (error) {
+          console.error('Error creating Tableau Viz:', error);
+        }
       }
 
       async function updateVizData(data) {
