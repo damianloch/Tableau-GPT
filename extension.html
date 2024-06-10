@@ -44,10 +44,13 @@
   </div>
 
   <script>
+    console.log('Extension script loaded');
+
     let viz;
 
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
+      console.log('Prompt entered:', prompt);
 
       try {
         const response = await fetch('http://localhost:5000/fetch_data', {
@@ -56,9 +59,12 @@
           body: JSON.stringify({ prompt })
         });
 
+        console.log('Response status:', response.status);
+
         if (response.ok) {
           const data = await response.json();
-          loadTableauVisualization(data.data);
+          console.log('Data received:', data);
+          loadTableauVisualization(data);
         } else {
           console.error('Failed to fetch data:', response.statusText);
         }
@@ -68,38 +74,36 @@
     }
 
     function loadTableauVisualization(data) {
+      console.log('Loading Tableau visualization with data:', data);
       const vizDiv = document.getElementById('tableauViz');
-      if (viz) {
-        viz.dispose(); // Dispose of the existing viz to create a new one
-      }
+      vizDiv.innerHTML = ''; // Clear previous visualization if any
 
-      const vizUrl = 'YOUR_TABLEAU_ONLINE_DASHBOARD_LINK'; // Replace with your Tableau Online dashboard link
-      const options = {
-        hideTabs: true,
-        onFirstInteractive: function () {
-          console.log('Tableau visualization loaded');
-          updateVizData(data); // Pass the fetched data to update the viz
+      if (!viz) {
+        try {
+          
+          const viz = document.createElement('tableau-viz');
+          viz.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
+          viz.setAttribute('width', '1000');
+          viz.setAttribute('height', '840');
+          viz.setAttribute('hide-tabs', 'true');
+          viz.setAttribute('toolbar', 'bottom');
+
+          // Log the attributes to check if they're being set correctly
+          console.log('Tableau viz attributes:', viz.getAttribute('src'), viz.getAttribute('width'), viz.getAttribute('height'), viz.getAttribute('hide-tabs'), viz.getAttribute('toolbar'));
+
+          viz.addEventListener('firstinteractive', function () {
+            console.log('Tableau visualization loaded');
+            
+          });
+
+          vizDiv.appendChild(viz);
+          console.log('Tableau Viz object created and loaded');
+        } catch (error) {
+          console.error('Error creating Tableau Viz:', error);
         }
-      };
-
-      viz = new tableau.Viz(vizDiv, vizUrl, options);
-    }
-
-    function updateVizData(data) {
-      const workbook = viz.getWorkbook();
-      const activeSheet = workbook.getActiveSheet();
-
-      // Assuming your dashboard has a sheet named "LineChart"
-      const lineChartSheet = activeSheet.getWorksheets().get("LineChart");
-
-      // Update the data for the line chart
-      lineChartSheet.applyFilterAsync(
-        "Month", // The field name in your Tableau view
-        data.map(item => item.month),
-        tableau.FilterUpdateType.REPLACE
-      ).then(() => {
-        console.log('Line chart data updated');
-      });
+      } else {
+        console.log('Tableau Viz object already exists');
+      }
     }
   </script>
 </body>
