@@ -2,93 +2,7 @@
 <html>
 <head>
   <title>Tableau Extension Demo</title>
-  <script type="module">
-    import { tableau } from 'https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js';
-    let viz; // Global variable to store the viz object
-
-    async function sendPrompt() {
-      const prompt = document.getElementById('prompt').value;
-      console.log('Prompt entered:', prompt);
-
-      try {
-        const response = await fetch('http://localhost:5000/fetch_data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-
-        console.log('Response status:', response.status);
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Data received:', data);
-          loadTableauVisualization(data.data);
-        } else {
-          console.error('Failed to fetch data:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error occurred during fetch:', error);
-      }
-    }
-
-    function loadTableauVisualization(data) {
-      console.log('Loading Tableau visualization with data:', data);
-      const vizDiv = document.getElementById('tableauViz');
-      vizDiv.innerHTML = ''; // Clear previous visualization if any
-
-      const vizUrl = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1'; // Replace with your Tableau Online dashboard link
-      const options = {
-        hideTabs: true,
-        onFirstInteractive: function () {
-          console.log('Tableau visualization loaded');
-          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
-          updateVizData(data); // Pass the fetched data to update the viz
-        }
-      };
-
-      try {
-        viz = new tableau.Viz(vizDiv, vizUrl, options);
-        console.log('Tableau Viz object created and loaded');
-      } catch (error) {
-        console.error('Error creating Tableau Viz:', error);
-      }
-    }
-
-    function updateVizData(data) {
-      console.log('Updating Viz data:', data);
-      if (viz) {
-        const workbook = viz.getWorkbook();
-        const activeSheet = workbook.getActiveSheet();
-
-        console.log('Workbook and ActiveSheet:', workbook, activeSheet);
-
-        // Assuming your dashboard has a sheet named "LineChart"
-        const lineChartSheet = activeSheet.getWorksheets().get("LineChart");
-
-        console.log('LineChart Sheet:', lineChartSheet);
-
-        // Extracting month data for filter
-        const months = data.map(item => item.month);
-        console.log('Months for filtering:', months);
-
-        // Update the data for the line chart
-        lineChartSheet.applyFilterAsync(
-          "Month", // The field name in your Tableau view
-          months,
-          tableau.FilterUpdateType.REPLACE
-        ).then(() => {
-          console.log('Line chart data updated');
-        }).catch(error => {
-          console.error('Error updating line chart data:', error);
-        });
-      } else {
-        console.error('Viz object is not defined.');
-      }
-    }
-
-    // Attach sendPrompt to the global scope to make it callable from HTML
-    window.sendPrompt = sendPrompt;
-  </script>
+  <script type="module" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
       display: flex;
@@ -128,5 +42,92 @@
     <button onclick="sendPrompt()">Submit</button>
     <div id="tableauViz"></div>
   </div>
+
+  <script>
+    let viz; // Global variable to store the viz object
+
+    async function sendPrompt() {
+      const prompt = document.getElementById('prompt').value;
+      console.log('Prompt entered:', prompt);
+
+      try {
+        const response = await fetch('http://localhost:5000/fetch_data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        console.log('Response status:', response.status);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Data received:', data);
+          loadTableauVisualization(data.data);
+        } else {
+          console.error('Failed to fetch data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error occurred during fetch:', error);
+      }
+    }
+
+    function loadTableauVisualization(data) {
+      console.log('Loading Tableau visualization with data:', data);
+      const vizDiv = document.getElementById('tableauViz');
+      vizDiv.innerHTML = ''; // Clear previous visualization if any
+
+      try {
+        const vizElement = document.createElement('tableau-viz');
+        vizElement.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
+        vizElement.setAttribute('width', '1000');
+        vizElement.setAttribute('height', '840');
+        vizElement.setAttribute('hide-tabs', 'true');
+        vizElement.setAttribute('toolbar', 'bottom');
+
+        vizElement.addEventListener('firstinteractive', function () {
+          console.log('Tableau visualization loaded');
+          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
+          updateVizData(data); // Pass the fetched data to update the viz
+        });
+
+        vizDiv.appendChild(vizElement);
+        console.log('Tableau Viz object created and loaded');
+      } catch (error) {
+        console.error('Error creating Tableau Viz:', error);
+      }
+    }
+
+    function updateVizData(data) {
+      console.log('Updating Viz data:', data);
+      if (viz) {
+        const workbook = viz.getWorkbook();
+        const activeSheet = workbook.getActiveSheet();
+
+        console.log('Workbook and ActiveSheet:', workbook, activeSheet);
+
+        // Assuming your dashboard has a sheet named "LineChart"
+        const lineChartSheet = activeSheet.getWorksheets().get("LineChart");
+
+        console.log('LineChart Sheet:', lineChartSheet);
+
+        // Extracting month data for filter
+        const months = data.map(item => item.month);
+        console.log('Months for filtering:', months);
+
+        // Update the data for the line chart
+        lineChartSheet.applyFilterAsync(
+          "Month", // The field name in your Tableau view
+          months,
+          tableau.FilterUpdateType.REPLACE
+        ).then(() => {
+          console.log('Line chart data updated');
+        }).catch(error => {
+          console.error('Error updating line chart data:', error);
+        });
+      } else {
+        console.error('Viz object is not defined.');
+      }
+    }
+  </script>
 </body>
 </html>
