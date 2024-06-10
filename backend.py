@@ -60,7 +60,7 @@ app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  #
 CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})
 
 # Replace with your actual database connection URL
-DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/GPT-Demo'
+DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
 
 engine = create_engine(DATABASE_URL)
 
