@@ -59,15 +59,34 @@
         console.log('Updating Viz data:', data);
         if (viz) {
           try {
-            const sheet = viz.workbook.activeSheet;
-            console.log('Active Sheet:', sheet);
+            const workbook = viz.workbook;
+            console.log('Workbook:', workbook);
+
+            const activeSheet = workbook.activeSheet;
+            console.log('Active Sheet:', activeSheet);
+
+            // Assuming your dashboard has a sheet named "LineChart"
+            const lineChartSheet = activeSheet.worksheets.find(sheet => sheet.name === "LineChart");
+
+            if (!lineChartSheet) {
+              console.error('LineChart sheet not found');
+              return;
+            }
+
+            console.log('LineChart Sheet:', lineChartSheet);
 
             // Extracting month data for filter
             const months = data.map(item => item.month);
             console.log('Months for filtering:', months);
 
             // Update the data for the line chart
-            await sheet.applyFilterAsync("Month", months, tableau.FilterUpdateType.Replace);
+            await lineChartSheet.applyFilterAsync(
+              "Month", // The field name in your Tableau view
+              {
+                values: months,
+                updateType: tableau.FilterUpdateType.Replace
+              }
+            );
             console.log('Line chart data updated');
           } catch (error) {
             console.error('Error updating line chart data:', error);
