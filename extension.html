@@ -43,7 +43,9 @@
     <div id="tableauViz"></div>
   </div>
 
-  <script type="text/javascript">
+  <script type="module">
+    import * as tableau from 'https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js';
+
     let viz; // Global variable to store the viz object
 
     async function sendPrompt() {
@@ -95,12 +97,17 @@
     }
 
     function updateVizData(data) {
+      console.log('Updating Viz data:', data);
       if (viz) {
         const workbook = viz.getWorkbook();
         const activeSheet = workbook.getActiveSheet();
 
+        console.log('Workbook and ActiveSheet:', workbook, activeSheet);
+
         // Assuming your dashboard has a sheet named "LineChart"
         const lineChartSheet = activeSheet.getWorksheets().get("LineChart");
+
+        console.log('LineChart Sheet:', lineChartSheet);
 
         // Update the data for the line chart
         lineChartSheet.applyFilterAsync(
