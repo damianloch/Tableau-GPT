@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Tableau Extension Demo</title>
-  <script type="module" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+  <script type="text/javascript" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
       display: flex;
@@ -44,7 +44,7 @@
   </div>
 
   <script>
-    let viz;
+    let viz; // Global variable to store the viz object
 
     async function sendPrompt() {
       const prompt = document.getElementById('prompt').value;
@@ -89,6 +89,7 @@
 
         vizElement.addEventListener('firstinteractive', function () {
           console.log('Tableau visualization loaded');
+          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
           updateVizData(data); // Pass the fetched data to update the viz
         });
 
