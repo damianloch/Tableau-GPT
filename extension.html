@@ -45,7 +45,7 @@
 </head>
 <body>
   <div id="app">
-    <input type="text" id="prompt" placeholder="Enter your prompt">
+    <input type="text" id="prompt" placeholder="How can I help">
     <button onclick="sendPrompt()">Submit</button>
     <div id="chartContainer">
       <canvas id="myChart"></canvas>
@@ -67,9 +67,9 @@
         console.log('Response status:', response.status);
 
         if (response.ok) {
-          const data = await response.json();
-          console.log('Data received:', data);
-          displayChart(data.data);
+          const result = await response.json();
+          console.log('Data received:', result);
+          determineChartConfigAndDisplay(result.data);
         } else {
           console.error('Failed to fetch data:', response.statusText);
         }
@@ -78,37 +78,63 @@
       }
     }
 
-    function displayChart(data) {
-      console.log('Displaying chart with data:', data);
-
-      const ctx = document.getElementById('myChart').getContext('2d');
-
-      // Determine chart type and data
-      let labels, values, label, chartType;
-      if (data[0].month) {
-        // Monthly data
-        labels = data.map(item => new Date(item.month));
-        if (data[0].revenue) {
-          values = data.map(item => item.revenue);
-          label = 'Monthly Revenue';
-        } else if (data[0].net_income) {
-          values = data.map(item => item.net_income);
-          label = 'Monthly Net Income';
-        }
-        chartType = 'line';
-      } else if (data[0].year) {
-        // Annual data
-        labels = data.map(item => new Date(item.year));
-        values = data.map(item => item.revenue);
-        label = 'Annual Revenue';
-        chartType = 'line';
-      } else if (data[0].quarter) {
-        // Quarterly data (bar chart)
-        labels = data.map(item => item.quarter); // Use quarter string directly
-        values = data.map(item => item.profit);
-        label = 'Quarterly Profits';
-        chartType = 'bar';
+    function determineChartConfigAndDisplay(data) {
+      if (!data || data.length === 0) {
+        console.error('No data received to display');
+        return;
       }
+
+      console.log('Data for chart configuration:', data);
+
+      // Determine chart type and data dynamically
+      let labels = [];
+      let values = [];
+      let xAxisLabel = '';
+      let yAxisLabel = '';
+      let chartType = 'line';
+
+      const firstItem = data[0];
+      const dateProperties = ['month', 'year', 'quarter'];
+      const numericProperties = Object.keys(firstItem).filter(key => typeof firstItem[key] === 'number');
+
+      // Find the date property
+      const dateProperty = dateProperties.find(prop => prop in firstItem);
+      if (dateProperty) {
+        if (dateProperty === 'month') {
+          labels = data.map(item => luxon.DateTime.fromISO(item[dateProperty]).toFormat('yyyy-MM'));
+        } else if (dateProperty === 'year') {
+          labels = data.map(item => luxon.DateTime.fromISO(item[dateProperty]).toFormat('yyyy'));
+        } else {
+          labels = data.map(item => item[dateProperty]);
+          chartType = 'bar';
+        }
+        xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1);
+      } else {
+        console.error('No date property found');
+        return;
+      }
+
+      // Use the first numeric property found for values
+      if (numericProperties.length > 0) {
+        values = data.map(item => item[numericProperties[0]]);
+        yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1);
+      } else {
+        console.error('No numeric property found');
+        return;
+      }
+
+      console.log('Labels:', labels);
+      console.log('Values:', values);
+      console.log('X Axis Label:', xAxisLabel);
+      console.log('Y Axis Label:', yAxisLabel);
+      console.log('Chart type:', chartType);
+
+      // Display the chart
+      displayChart(labels, values, xAxisLabel, yAxisLabel, chartType);
+    }
+
+    function displayChart(labels, values, xAxisLabel, yAxisLabel, chartType) {
+      const ctx = document.getElementById('myChart').getContext('2d');
 
       // Display the chart container
       document.getElementById('chartContainer').style.display = 'block';
@@ -124,7 +150,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: label,
+            label: yAxisLabel,
             data: values,
             backgroundColor: chartType === 'bar' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(75, 192, 192, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
@@ -136,8 +162,13 @@
           scales: {
             x: {
               type: chartType === 'bar' ? 'category' : 'time',
+              title: {
+                display: true,
+                text: xAxisLabel
+              },
               time: {
-                unit: chartType === 'bar' ? undefined : 'month'
+                unit: chartType === 'bar' ? undefined : 'year',
+                tooltipFormat: chartType === 'bar' ? undefined : 'yyyy'
               },
               adapters: {
                 date: {
@@ -146,11 +177,17 @@
               }
             },
             y: {
-              beginAtZero: true
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: yAxisLabel
+              }
             }
           }
         }
       });
+
+      console.log('Chart rendered successfully');
     }
   </script>
 </body>
