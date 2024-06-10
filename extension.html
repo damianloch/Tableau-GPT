@@ -89,9 +89,9 @@
         // Log the attributes to check if they're being set correctly
         console.log('Tableau viz attributes:', vizElement.getAttribute('src'), vizElement.getAttribute('width'), vizElement.getAttribute('height'), vizElement.getAttribute('hide-tabs'), vizElement.getAttribute('toolbar'));
 
-        vizElement.addEventListener('firstinteractive', function () {
+        vizElement.addEventListener('firstinteractive', function (event) {
           console.log('Tableau visualization loaded');
-          viz = tableau.VizManager.getVizs()[0]; // Store the viz object globally
+          viz = event.target; // Store the viz object globally
           updateVizData(data); // Pass the fetched data to update the viz
         });
 
