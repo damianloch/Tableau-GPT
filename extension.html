@@ -104,7 +104,7 @@
         chartType = 'line';
       } else if (data[0].quarter) {
         // Quarterly data (bar chart)
-        labels = data.map(item => new Date(item.quarter));
+        labels = data.map(item => item.quarter); // Use quarter string directly
         values = data.map(item => item.profit);
         label = 'Quarterly Profits';
         chartType = 'bar';
@@ -135,9 +135,9 @@
         options: {
           scales: {
             x: {
-              type: 'time',
+              type: chartType === 'bar' ? 'category' : 'time',
               time: {
-                unit: chartType === 'bar' ? 'quarter' : 'month'
+                unit: chartType === 'bar' ? undefined : 'month'
               },
               adapters: {
                 date: {
