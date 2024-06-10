@@ -3,6 +3,8 @@
 <head>
   <title>Chart.js Demo</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
   <style>
     body {
       display: flex;
@@ -82,7 +84,7 @@
       const ctx = document.getElementById('myChart').getContext('2d');
 
       // Extracting the data for the chart
-      const labels = data.map(item => new Date(item.month).toLocaleDateString());
+      const labels = data.map(item => new Date(item.month));
       const values = data.map(item => item.net_income);
 
       // Display the chart container
@@ -108,6 +110,11 @@
               type: 'time',
               time: {
                 unit: 'month'
+              },
+              adapters: {
+                date: {
+                  lib: 'luxon'
+                }
               }
             },
             y: {
