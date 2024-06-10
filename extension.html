@@ -29,12 +29,19 @@
       font-size: 16px;
       cursor: pointer;
     }
+    #tableauViz {
+      display: none;
+      margin-top: 20px;
+      width: 100%;
+      height: 600px;
+    }
   </style>
 </head>
 <body>
   <div id="app">
     <input type="text" id="prompt" placeholder="Enter your prompt">
     <button onclick="sendPrompt()">Submit</button>
+    <div id="tableauViz"></div>
   </div>
 
   <script>
@@ -54,7 +61,7 @@
         if (response.ok) {
           const data = await response.json();
           console.log('Data received:', data);
-          updateTableau(data.data);
+          loadTableauVisualization(data.data);
         } else {
           console.error('Failed to fetch data:', response.statusText);
         }
@@ -63,8 +70,32 @@
       }
     }
 
-    async function updateTableau(data) {
-      console.log('Updating Tableau with data:', data);
+    function loadTableauVisualization(data) {
+      console.log('Loading Tableau visualization with data:', data);
+      const vizDiv = document.getElementById('tableauViz');
+      vizDiv.innerHTML = ''; // Clear previous visualization if any
+
+      try {
+        const viz = new tableau.Viz(vizDiv, {
+          url: 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1',
+          height: '600px',
+          width: '100%',
+          hideToolbar: true,
+          onFirstInteractive: () => {
+            console.log('Tableau visualization loaded');
+            updateVizData(data);
+          }
+        });
+
+        // Show the Tableau Viz container
+        vizDiv.style.display = 'block';
+      } catch (error) {
+        console.error('Error creating Tableau Viz:', error);
+      }
+    }
+
+    async function updateVizData(data) {
+      console.log('Updating Viz data:', data);
       try {
         await tableau.extensions.initializeAsync();
         const dashboard = tableau.extensions.dashboardContent.dashboard;
