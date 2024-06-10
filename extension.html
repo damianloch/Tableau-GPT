@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Tableau Extension Demo</title>
-  <script type="text/javascript" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+  <script type="module" src="https://prod-ca-a.online.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
   <style>
     body {
       display: flex;
@@ -74,39 +74,52 @@
     function loadTableauVisualization(data) {
       console.log('Loading Tableau visualization with data:', data);
       const vizDiv = document.getElementById('tableauViz');
-      if (viz) {
-        viz.dispose(); // Dispose of the existing viz to create a new one
-      }
+      vizDiv.innerHTML = ''; // Clear previous visualization if any
 
-      const vizUrl = 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1'; // Replace with your Tableau Online dashboard link
-      const options = {
-        hideTabs: true,
-        onFirstInteractive: function () {
+      try {
+        const vizElement = document.createElement('tableau-viz');
+        vizElement.setAttribute('src', 'https://prod-ca-a.online.tableau.com/t/damianloch3e5bf99f5a/views/Book1/Dashboard1');
+        vizElement.setAttribute('width', '1000');
+        vizElement.setAttribute('height', '840');
+        vizElement.setAttribute('hide-tabs', 'true');
+        vizElement.setAttribute('toolbar', 'bottom');
+
+        // Log the attributes to check if they're being set correctly
+        console.log('Tableau viz attributes:', vizElement.getAttribute('src'), vizElement.getAttribute('width'), vizElement.getAttribute('height'), vizElement.getAttribute('hide-tabs'), vizElement.getAttribute('toolbar'));
+
+        vizElement.addEventListener('firstinteractive', function () {
           console.log('Tableau visualization loaded');
           updateVizData(data); // Pass the fetched data to update the viz
-        }
-      };
+        });
 
-      viz = new tableau.Viz(vizDiv, vizUrl, options);
+        vizDiv.appendChild(vizElement);
+        console.log('Tableau Viz object created and loaded');
+      } catch (error) {
+        console.error('Error creating Tableau Viz:', error);
+      }
     }
 
     function updateVizData(data) {
-      const workbook = viz.getWorkbook();
-      const activeSheet = workbook.getActiveSheet();
+      if (viz) {
+        const workbook = viz.getWorkbook();
+        const activeSheet = workbook.getActiveSheet();
 
-      // Assuming your dashboard has a sheet named "LineChart"
-      const lineChartSheet = activeSheet.getWorksheets().get("LineChart");
+        // Assuming your dashboard has a sheet named "LineChart"
+        const lineChartSheet = activeSheet.getWorksheets().get("LineChart");
 
-      // Update the data for the line chart
-      lineChartSheet.applyFilterAsync(
-        "Month", // The field name in your Tableau view
-        data.map(item => item.month),
-        tableau.FilterUpdateType.REPLACE
-      ).then(() => {
-        console.log('Line chart data updated');
-      }).catch(error => {
-        console.error('Error updating line chart data:', error);
-      });
+        // Update the data for the line chart
+        lineChartSheet.applyFilterAsync(
+          "Month", // The field name in your Tableau view
+          data.map(item => item.month),
+          tableau.FilterUpdateType.REPLACE
+        ).then(() => {
+          console.log('Line chart data updated');
+        }).catch(error => {
+          console.error('Error updating line chart data:', error);
+        });
+      } else {
+        console.error('Viz object is not defined.');
+      }
     }
   </script>
 </body>
