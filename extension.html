@@ -180,7 +180,8 @@
           plugins: {
             title: {
               display: true,
-              text: chartTitle
+              text: chartTitle,
+              color: 'white'
             }
           },
           scales: {
@@ -188,7 +189,8 @@
               type: chartType === 'bar' ? 'category' : 'time',
               title: {
                 display: true,
-                text: xAxisLabel
+                text: xAxisLabel,
+                color: 'white'
               },
               time: {
                 unit: chartType === 'bar' ? undefined : 'year',
@@ -198,13 +200,26 @@
                 date: {
                   lib: 'luxon'
                 }
+              },
+              ticks: {
+                color: 'white'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.2)'
               }
             },
             y: {
               beginAtZero: true,
               title: {
                 display: true,
-                text: yAxisLabel
+                text: yAxisLabel,
+                color: 'white'
+              },
+              ticks: {
+                color: 'white'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.2)'
               }
             }
           }
