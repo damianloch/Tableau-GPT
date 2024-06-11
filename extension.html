@@ -22,15 +22,26 @@
       width: 100%;
       max-width: 800px;
     }
+    .search-container {
+      display: flex;
+      align-items: center;
+      background-color: transparent;
+      border: 2px solid white;
+      border-radius: 24px;
+      padding: 5px 10px;
+    }
     #prompt {
-      width: 400px;
+      width: 300px;
       padding: 10px;
       font-size: 16px;
-      margin-right: 10px;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      color: white;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
+    .search-icon {
+      width: 24px;
+      height: 24px;
       cursor: pointer;
     }
     #chartContainer {
@@ -47,8 +58,10 @@
 </head>
 <body>
   <div id="app">
-    <input type="text" id="prompt" placeholder="Enter your prompt">
-    <button onclick="sendPrompt()">Submit</button>
+    <div class="search-container">
+      <input type="text" id="prompt" placeholder="Type to search...">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Font_Awesome_5_solid_search.svg" alt="Search" class="search-icon" onclick="sendPrompt()">
+    </div>
     <div id="chartContainer">
       <canvas id="myChart"></canvas>
     </div>
@@ -109,13 +122,13 @@
       if (dateProperty) {
         if (dateProperty === 'month') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy-MM');
             console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
             return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
           });
         } else if (dateProperty === 'year') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy');
             console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
             return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
           });
@@ -180,7 +193,8 @@
           plugins: {
             title: {
               display: true,
-              text: chartTitle
+              text: chartTitle,
+              color: 'white'
             }
           },
           scales: {
@@ -188,23 +202,37 @@
               type: chartType === 'bar' ? 'category' : 'time',
               title: {
                 display: true,
-                text: xAxisLabel
+                text: xAxisLabel,
+                color: 'white'
               },
               time: {
-                unit: chartType === 'bar' ? undefined : 'year',
-                tooltipFormat: chartType === 'bar' ? undefined : 'yyyy'
+                unit: 'month',
+                tooltipFormat: 'yyyy-MM'
               },
               adapters: {
                 date: {
                   lib: 'luxon'
                 }
+              },
+              ticks: {
+                color: 'white'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.2)'
               }
             },
             y: {
               beginAtZero: true,
               title: {
                 display: true,
-                text: yAxisLabel
+                text: yAxisLabel,
+                color: 'white'
+              },
+              ticks: {
+                color: 'white'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.2)'
               }
             }
           }
