@@ -34,16 +34,41 @@ def get_query_from_prompt(user_prompt, timeout=60):
                 - monthly_cash_flow (columns: month, cash_flow)
                 - quarterly_operating_costs (columns: quarter, operating_costs)
                 - annual_dividends (columns: year, dividends)
+                - monthly_sales (columns: month, product_name, sales)
+                - employee_performance (columns: quarter, employee_name, performance_rating)
+                - department_expenses (columns: month, department_name, expenses)
+                - customer_feedback (columns: month, product_name, feedback_score)
                 Only generate queries that reference these tables and their columns.
                 Example prompts and queries:
                 - "Plot a line chart to show the annual revenue growth from 2021 to 2023."
                   SQL: SELECT * FROM annual_revenue WHERE year BETWEEN '2021-01-01' AND '2023-01-01';
                 - "Create a line graph to illustrate the monthly net income for each month in 2023."
                   SQL: SELECT * FROM monthly_net_income WHERE month BETWEEN '2023-01-01' AND '2023-12-01';
-                """},
+                - "Generate a line graph showing the monthly revenue trend for the year 2023."
+                  SQL: SELECT * FROM monthly_revenue WHERE month BETWEEN '2023-01-01' AND '2023-12-01';
+                - "Produce a bar graph comparing quarterly profits for the four quarters of 2023."
+                  SQL: SELECT * FROM quarterly_profits WHERE quarter BETWEEN '2023-01-01' AND '2023-12-31';
+                - "Generate a line chart showing the monthly sales trend for Product A in 2023."
+                  SQL: SELECT month, sales FROM monthly_sales WHERE product_name = 'Product A' AND month BETWEEN '2023-01-01' AND '2023-12-01';
+                - "Create a bar graph comparing the quarterly performance ratings of Alice and Bob in 2023."
+                  SQL: SELECT quarter, employee_name, performance_rating FROM employee_performance WHERE quarter BETWEEN '2023-01-01' AND '2023-12-31';
+                - "Produce a line chart to illustrate the monthly expenses for the Marketing department in 2023."
+                  SQL: SELECT month, expenses FROM department_expenses WHERE department_name = 'Marketing' AND month BETWEEN '2023-01-01' AND '2023-12-01';
+                - "Generate a bar graph showing the monthly feedback scores for Product B in 2023."
+                  SQL: SELECT month, feedback_score FROM customer_feedback WHERE product_name = 'Product B' AND month BETWEEN '2023-01-01' AND '2023-12-01';
+            """},
             {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ]
     }
+
+    with httpx.Client(timeout=timeout) as client:
+        response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content'].strip()
+        else:
+            logging.error(f"Failed to generate text: {response.text}")
+            raise Exception("Failed to generate text: " + response.text)
+
 
     with httpx.Client(timeout=timeout) as client:
         response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
