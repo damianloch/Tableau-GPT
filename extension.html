@@ -14,6 +14,8 @@
       height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
+      background-color: #1e1a26;
+      color: white;
     }
     #app {
       text-align: center;
@@ -136,7 +138,7 @@
       }
 
       // Use the table name as the chart title
-      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
 
       console.log('Labels:', labels);
       console.log('Values:', values);
