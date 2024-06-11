@@ -109,13 +109,13 @@
       if (dateProperty) {
         if (dateProperty === 'month') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromISO(item[dateProperty]);
+            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy-MM');
             console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
             return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
           });
         } else if (dateProperty === 'year') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromISO(item[dateProperty]);
+            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy');
             console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
             return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
           });
