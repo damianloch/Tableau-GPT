@@ -74,7 +74,8 @@
         if (response.ok) {
           const result = await response.json();
           console.log('Data received:', result);
-          determineChartConfigAndDisplay(result.data, chartType);
+          const tableName = result.tableName; // Assuming the table name is part of the response
+          determineChartConfigAndDisplay(result.data, chartType, tableName);
         } else {
           console.error('Failed to fetch data:', response.statusText);
         }
@@ -83,7 +84,7 @@
       }
     }
 
-    function determineChartConfigAndDisplay(data, chartType) {
+    function determineChartConfigAndDisplay(data, chartType, tableName) {
       if (!data || data.length === 0) {
         console.error('No data received to display');
         return;
@@ -134,17 +135,21 @@
         return;
       }
 
+      // Use the table name as the chart title
+      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+
       console.log('Labels:', labels);
       console.log('Values:', values);
       console.log('X Axis Label:', xAxisLabel);
       console.log('Y Axis Label:', yAxisLabel);
       console.log('Chart type:', chartType);
+      console.log('Chart title:', chartTitle);
 
       // Display the chart
-      displayChart(labels, values, xAxisLabel, yAxisLabel, chartType);
+      displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle);
     }
 
-    function displayChart(labels, values, xAxisLabel, yAxisLabel, chartType) {
+    function displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle) {
       const ctx = document.getElementById('myChart').getContext('2d');
 
       // Display the chart container
@@ -170,6 +175,12 @@
           }]
         },
         options: {
+          plugins: {
+            title: {
+              display: true,
+              text: chartTitle
+            }
+          },
           scales: {
             x: {
               type: chartType === 'bar' ? 'category' : 'time',
