@@ -57,6 +57,11 @@
       const prompt = document.getElementById('prompt').value;
       console.log('Prompt entered:', prompt);
 
+      let chartType = 'line';
+      if (prompt.toLowerCase().includes('bar')) {
+        chartType = 'bar';
+      }
+
       try {
         const response = await fetch('http://localhost:5000/fetch_data', {
           method: 'POST',
@@ -69,7 +74,7 @@
         if (response.ok) {
           const result = await response.json();
           console.log('Data received:', result);
-          determineChartConfigAndDisplay(result.data);
+          determineChartConfigAndDisplay(result.data, chartType);
         } else {
           console.error('Failed to fetch data:', response.statusText);
         }
@@ -78,7 +83,7 @@
       }
     }
 
-    function determineChartConfigAndDisplay(data) {
+    function determineChartConfigAndDisplay(data, chartType) {
       if (!data || data.length === 0) {
         console.error('No data received to display');
         return;
@@ -86,12 +91,11 @@
 
       console.log('Data for chart configuration:', data);
 
-      // Determine chart type and data dynamically
+      // Determine chart data dynamically
       let labels = [];
       let values = [];
       let xAxisLabel = '';
       let yAxisLabel = '';
-      let chartType = 'line';
 
       const firstItem = data[0];
       const dateProperties = ['month', 'year', 'quarter'];
@@ -114,7 +118,6 @@
           });
         } else {
           labels = data.map(item => item[dateProperty]);
-          chartType = 'bar';
         }
         xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1);
       } else {
