@@ -74,7 +74,7 @@
         if (response.ok) {
           const result = await response.json();
           console.log('Data received:', result);
-          const tableName = result.tableName; // Assuming the table name is part of the response
+          const tableName = result.tableName || 'Chart'; // Default to 'Chart' if tableName is not present
           determineChartConfigAndDisplay(result.data, chartType, tableName);
         } else {
           console.error('Failed to fetch data:', response.statusText);
