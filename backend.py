@@ -69,24 +69,6 @@ def get_query_from_prompt(user_prompt, timeout=60):
             logging.error(f"Failed to generate text: {response.text}")
             raise Exception("Failed to generate text: " + response.text)
 
-
-    with httpx.Client(timeout=timeout) as client:
-        response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
-        else:
-            logging.error(f"Failed to generate text: {response.text}")
-            raise Exception("Failed to generate text: " + response.text)
-
-
-    with httpx.Client(timeout=timeout) as client:
-        response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
-        else:
-            logging.error(f"Failed to generate text: {response.text}")
-            raise Exception("Failed to generate text: " + response.text)
-
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
@@ -109,13 +91,17 @@ def fetch_data():
 
         query = get_query_from_prompt(prompt)
         logging.debug(f"Generated query: {query}")
+
+        # Extract table name from query
+        table_name = query.split('FROM')[1].split()[0].strip()
+
         with engine.connect() as connection:
             data = pd.read_sql(text(query), connection)
             logging.debug(f"Query result: {data}")
 
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
-        return jsonify({"data": data_json})
+        return jsonify({"data": data_json, "tableName": table_name})
     except Exception as e:
         logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
