@@ -109,13 +109,13 @@
       if (dateProperty) {
         if (dateProperty === 'month') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy-MM');
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
             console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
             return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
           });
         } else if (dateProperty === 'year') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy');
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
             console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
             return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
           });
@@ -180,8 +180,7 @@
           plugins: {
             title: {
               display: true,
-              text: chartTitle,
-              color: 'white'
+              text: chartTitle
             }
           },
           scales: {
@@ -189,37 +188,23 @@
               type: chartType === 'bar' ? 'category' : 'time',
               title: {
                 display: true,
-                text: xAxisLabel,
-                color: 'white'
+                text: xAxisLabel
               },
               time: {
-                unit: 'month',
-                tooltipFormat: 'yyyy-MM'
+                unit: chartType === 'bar' ? undefined : 'year',
+                tooltipFormat: chartType === 'bar' ? undefined : 'yyyy'
               },
               adapters: {
                 date: {
                   lib: 'luxon'
                 }
-              },
-              ticks: {
-                color: 'white'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.2)'
               }
             },
             y: {
               beginAtZero: true,
               title: {
                 display: true,
-                text: yAxisLabel,
-                color: 'white'
-              },
-              ticks: {
-                color: 'white'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.2)'
+                text: yAxisLabel
               }
             }
           }
