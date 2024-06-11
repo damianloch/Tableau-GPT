@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
   <style>
     body {
-      background-color: #1e1a26;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -26,8 +25,6 @@
       padding: 10px;
       font-size: 16px;
       margin-right: 10px;
-      word-wrap: break-word;
-      white-space: pre-wrap;
     }
     button {
       padding: 10px 20px;
@@ -66,7 +63,7 @@
       }
 
       try {
-        const response = await fetch('http://localhost:5000/fetch data', {
+        const response = await fetch('http://localhost:5000/fetch_data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt })
@@ -139,7 +136,7 @@
       }
 
       // Use the table name as the chart title
-      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
+      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1);
 
       console.log('Labels:', labels);
       console.log('Values:', values);
