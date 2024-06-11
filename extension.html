@@ -22,26 +22,15 @@
       width: 100%;
       max-width: 800px;
     }
-    .search-container {
-      display: flex;
-      align-items: center;
-      background-color: transparent;
-      border: 2px solid white;
-      border-radius: 24px;
-      padding: 5px 10px;
-    }
     #prompt {
-      width: 300px;
+      width: 400px;
       padding: 10px;
       font-size: 16px;
-      background-color: transparent;
-      border: none;
-      outline: none;
-      color: white;
+      margin-right: 10px;
     }
-    .search-icon {
-      width: 24px;
-      height: 24px;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
       cursor: pointer;
     }
     #chartContainer {
@@ -58,10 +47,8 @@
 </head>
 <body>
   <div id="app">
-    <div class="search-container">
-      <input type="text" id="prompt" placeholder="Type to search...">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Font_Awesome_5_solid_search.svg" alt="Search" class="search-icon" onclick="sendPrompt()">
-    </div>
+    <input type="text" id="prompt" placeholder="Enter your prompt">
+    <button onclick="sendPrompt()">Submit</button>
     <div id="chartContainer">
       <canvas id="myChart"></canvas>
     </div>
@@ -122,20 +109,20 @@
       if (dateProperty) {
         if (dateProperty === 'month') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy-MM');
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
             console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
             return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
           });
         } else if (dateProperty === 'year') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromFormat(item[dateProperty], 'yyyy');
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
             console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
             return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
           });
         } else {
           labels = data.map(item => item[dateProperty]);
         }
-        xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1);
+        xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1).replace(/_/g, ' ');
       } else {
         console.error('No date property found');
         return;
@@ -144,7 +131,7 @@
       // Use the first numeric property found for values
       if (numericProperties.length > 0) {
         values = data.map(item => item[numericProperties[0]]);
-        yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1);
+        yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1).replace(/_/g, ' ');
       } else {
         console.error('No numeric property found');
         return;
@@ -206,8 +193,8 @@
                 color: 'white'
               },
               time: {
-                unit: 'month',
-                tooltipFormat: 'yyyy-MM'
+                unit: chartType === 'bar' ? undefined : 'year',
+                tooltipFormat: chartType === 'bar' ? undefined : 'yyyy'
               },
               adapters: {
                 date: {
