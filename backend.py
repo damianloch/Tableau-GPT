@@ -73,10 +73,10 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
-CORS(app, resources={r"/*": {"origins": "https://damianloch.github.io"}})
+CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
 
 # Replace with your actual database connection URL
-DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
+DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/postgres'
 
 engine = create_engine(DATABASE_URL)
 

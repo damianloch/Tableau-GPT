@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 
 # Replace with your actual password
-engine = create_engine('postgresql://postgres:postgres2024@localhost/GPT-Demo')
+engine = create_engine('postgresql://postgres:postgres2024@localhost/postgres')
 
 def test_connection():
     try:

@@ -14,7 +14,7 @@
       height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: transparent;
+      background-color: rgb(14, 14, 54);
       color: black;
     }
     #app {
@@ -84,6 +84,8 @@
       let chartType = 'line';
       if (prompt.toLowerCase().includes('bar')) {
         chartType = 'bar';
+      } else if (prompt.toLowerCase().includes('pie')) {
+        chartType = 'pie';
       }
 
       try {
@@ -125,35 +127,40 @@
       const dateProperties = ['month', 'year', 'quarter'];
       const numericProperties = Object.keys(firstItem).filter(key => typeof firstItem[key] === 'number');
 
-      const dateProperty = dateProperties.find(prop => prop in firstItem);
-      if (dateProperty) {
-        if (dateProperty === 'month') {
-          labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
-            console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
-            return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
-          });
-        } else if (dateProperty === 'year') {
-          labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
-            console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
-            return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
-          });
-        } else {
-          labels = data.map(item => item[dateProperty]);
-        }
-        xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1).replace(/_/g, ' ');
-      } else {
-        console.error('No date property found');
-        return;
-      }
-
-      if (numericProperties.length > 0) {
+      if (chartType === 'pie') {
+        labels = data.map(item => item[Object.keys(firstItem).filter(key => key !== numericProperties[0])[0]]);
         values = data.map(item => item[numericProperties[0]]);
-        yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1).replace(/_/g, ' ');
       } else {
-        console.error('No numeric property found');
-        return;
+        const dateProperty = dateProperties.find(prop => prop in firstItem);
+        if (dateProperty) {
+          if (dateProperty === 'month') {
+            labels = data.map(item => {
+              const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+              console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
+              return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
+            });
+          } else if (dateProperty === 'year') {
+            labels = data.map(item => {
+              const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+              console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
+              return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
+            });
+          } else {
+            labels = data.map(item => item[dateProperty]);
+          }
+          xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1).replace(/_/g, ' ');
+        } else {
+          console.error('No date property found');
+          return;
+        }
+
+        if (numericProperties.length > 0) {
+          values = data.map(item => item[numericProperties[0]]);
+          yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1).replace(/_/g, ' ');
+        } else {
+          console.error('No numeric property found');
+          return;
+        }
       }
 
       const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
@@ -177,18 +184,20 @@
         window.myChart.destroy();
       }
 
+      const datasetConfig = {
+        label: yAxisLabel,
+        data: values,
+        backgroundColor: chartType === 'pie' ? generateColors(values.length) : 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+        fill: chartType !== 'bar' && chartType !== 'pie'
+      };
+
       window.myChart = new Chart(ctx, {
         type: chartType,
         data: {
           labels: labels,
-          datasets: [{
-            label: yAxisLabel,
-            data: values,
-            backgroundColor: chartType === 'bar' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-            fill: chartType !== 'bar'
-          }]
+          datasets: [datasetConfig]
         },
         options: {
           plugins: {
@@ -198,7 +207,7 @@
               color: 'white'
             }
           },
-          scales: {
+          scales: chartType !== 'pie' ? {
             x: {
               type: chartType === 'bar' ? 'category' : 'time',
               title: {
@@ -219,7 +228,7 @@
                 color: 'white'
               },
               grid: {
-                color: 'rgba(255, 255, 255, 1.0)'
+                color: 'rgba(255, 255, 255, 0.2)'
               }
             },
             y: {
@@ -233,14 +242,23 @@
                 color: 'white'
               },
               grid: {
-                color: 'rgba(255, 255, 255, 1.0)'
+                color: 'rgba(255, 255, 255, 0.2)'
               }
             }
-          }
+          } : {}
         }
       });
 
       console.log('Chart rendered successfully');
+    }
+
+    function generateColors(count) {
+      const colors = [];
+      for (let i = 0; i < count; i++) {
+        const color = `hsl(${(i * 360) / count}, 70%, 50%)`;
+        colors.push(color);
+      }
+      return colors;
     }
   </script>
 </body>
