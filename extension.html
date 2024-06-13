@@ -74,13 +74,11 @@
       color: #000; /* Changed text color to black for better contrast */
       text-align: center;
     }
-    
     .cardTitle {
       font-size: 14px;
       margin-bottom: 5px;
       color: #666;
     }
-    
     .cardContent {
       font-size: 24px;
       font-weight: bold;
@@ -173,176 +171,144 @@
     }
 
     function determineChartConfigAndDisplay(data, chartType, tableName) {
-     
-
-  if (!data || data.length === 0) {
-    console.error('No data received to display');
-    return;
-  }
-  console.log('Data for chart configuration:', data);
-  let labels = [];
-  let values = [];
-  let xAxisLabel = '';
-  let yAxisLabel = '';
-  const firstItem = data[0];
-  const dateProperties = ['month', 'year', 'quarter'];
-  const numericProperties = Object.keys(firstItem).filter(key => typeof firstItem[key] === 'number');
-  const dateProperty = dateProperties.find(prop => prop in firstItem);
-  if (dateProperty) {
-    if (dateProperty === 'month') {
-      labels = data.map(item => {
-        const date = luxon.DateTime.fromHTTP(item[dateProperty]);
-        console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
-        return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
-      });
-    } else if (dateProperty === 'year') {
-      labels = data.map(item => {
-        const date = luxon.DateTime.fromHTTP(item[dateProperty]);
-        console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
-        return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
-      });
-    } else if(dateProperty==='quarter'){
-
-      labels=data.map(item=>{
-        const date = luxon.DateTime.fromHTTP(item[dateProperty]);
-        console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
-        return date.isValid ? 'Q${Math.ceil(date.month/3)} ${date.year}': 'Invalid DateTime'; 
-      });
+      if (!data || data.length === 0) {
+        console.error('No data received to display');
+        return;
+      }
+      console.log('Data for chart configuration:', data);
+      let labels = [];
+      let values = [];
+      let xAxisLabel = '';
+      let yAxisLabel = '';
+      const firstItem = data[0];
+      const dateProperties = ['month', 'year', 'quarter'];
+      const numericProperties = Object.keys(firstItem).filter(key => typeof firstItem[key] === 'number');
+      const dateProperty = dateProperties.find(prop => prop in firstItem);
+      if (dateProperty) {
+        if (dateProperty === 'month') {
+          labels = data.map(item => {
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
+            return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
+          });
+        } else if (dateProperty === 'year') {
+          labels = data.map(item => {
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
+            return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
+          });
+        } else if(dateProperty==='quarter'){
+          labels = data.map(item => {
+            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            console.log(`Parsing date '${item[dateProperty]}' as quarter:`, date);
+            return date.isValid ? `Q${Math.ceil(date.month/3)} ${date.year}`: 'Invalid DateTime';
+          });
+        } else {
+          labels = data.map(item => item[dateProperty]);
+        }
+        xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1).replace(/_/g, ' ');
+      } else if (chartType === 'pie') {
+        // For pie charts, use non-date properties for labels if date property is not found
+        const labelProperty = Object.keys(firstItem).find(key => typeof firstItem[key] === 'string');
+        if (labelProperty) {
+          labels = data.map(item => item[labelProperty]);
+          xAxisLabel = labelProperty.charAt(0).toUpperCase() + labelProperty.slice(1).replace(/_/g, ' ');
+        } else {
+          console.error('No suitable property found for labels in pie chart');
+          return;
+        }
+      } else {
+        console.error('No date property found');
+        return;
+      }
+      if (numericProperties.length > 0) {
+        values = data.map(item => item[numericProperties[0]]);
+        yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1).replace(/_/g, ' ');
+      } else {
+        console.error('No numeric property found');
+        return;
+      }
+      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
+      console.log('Labels:', labels);
+      console.log('Values:', values);
+      console.log('X Axis Label:', xAxisLabel);
+      console.log('Y Axis Label:', yAxisLabel);
+      console.log('Chart type:', chartType);
+      console.log('Chart title:', chartTitle);
+      displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle);
     }
-     else {
-      labels = data.map(item => item[dateProperty]);
-    }
-    xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1).replace(/_/g, ' ');
-  } else if (chartType === 'pie') {
-    // For pie charts, use non-date properties for labels if date property is not found
-    const labelProperty = Object.keys(firstItem).find(key => typeof firstItem[key] === 'string');
-    if (labelProperty) {
-      labels = data.map(item => item[labelProperty]);
-      xAxisLabel = labelProperty.charAt(0).toUpperCase() + labelProperty.slice(1).replace(/_/g, ' ');
-    } else {
-      console.error('No suitable property found for labels in pie chart');
-      return;
-    }
-  } else {
-    console.error('No date property found');
-    return;
-  }
-  if (numericProperties.length > 0) {
-    values = data.map(item => item[numericProperties[0]]);
-    yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1).replace(/_/g, ' ');
-  } else {
-    console.error('No numeric property found');
-    return;
-  }
-  const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
-  console.log('Labels:', labels);
-  console.log('Values:', values);
-  console.log('X Axis Label:', xAxisLabel);
-  console.log('Y Axis Label:', yAxisLabel);
-  console.log('Chart type:', chartType);
-  console.log('Chart title:', chartTitle);
-  displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle);
-}
 
     function displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle) {
-     
-     
       const ctx = document.getElementById('myChart').getContext('2d');
-  // Display the chart container
-  document.getElementById('chartContainer').style.display = 'block';
-  // Clear any previous chart
-  if (window.myChart && typeof window.myChart.destroy === 'function') {
-    window.myChart.destroy();
-  }
-  const chartOptions = {
-    plugins: {
-      title: {
-        display: true,
-        text: chartTitle,
-        color: 'white'
-      }
-    }
-  };
-  // Only set scales if the chart type is not 'pie'
-  if (chartType !== 'pie') {
-    chartOptions.scales = {
-      x: {
-        type: chartType === 'bar' ? 'category' : 'time',
-        title: {
-          display: true,
-          text: xAxisLabel,
-          color: 'white'
-        },
-        time: {
-          unit: chartType === 'bar' ? undefined : 'month', // Changed to 'month' for better granularity
-          tooltipFormat: chartType === 'bar' ? undefined : 'yyyy-MM' // Changed to 'yyyy-MM' for better display
-        },
-        adapters: {
-          date: {
-            lib: 'luxon'
-          }
-        },
-        ticks: {
-          color: 'white'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.2)'
-        }
-      },
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: yAxisLabel,
-          color: 'white'
-        },
-        ticks: {
-          color: 'white'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.2)'
-        }
-      }
-    };
-  }
-  // Creating the chart
-  window.myChart = new Chart(ctx, {
-    type: chartType,
-    data: {
-      labels: labels,
-      datasets: [{
-        label: yAxisLabel,
-        data: values,
-        backgroundColor: chartType === 'bar' ? 'rgba(75, 192, 192, 0.2)' : 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-        fill: chartType !== 'bar'
-      }]
-    },
-    options: chartOptions
-  });
-  console.log('Chart rendered successfully');
-}
-
-
-
-
-
-
-
-
+      
+      document.getElementById('chartContainer').style.display = 'block';
 
       if (window.myChart && typeof window.myChart.destroy === 'function') {
         window.myChart.destroy();
       }
 
-      const {colors, borderColors} = generateColors();
+      const chartOptions = {
+        plugins: {
+          title: {
+            display: true,
+            text: chartTitle,
+            color: 'white'
+          },
+          legend: {
+            labels: {
+              color: 'white'
+            }
+          }
+        }
+      };
+
+      if (chartType !== 'pie') {
+        chartOptions.scales = {
+          x: {
+            type: chartType === 'bar' ? 'category' : 'time',
+            title: {
+              display: true,
+              text: xAxisLabel,
+              color: 'white'
+            },
+            time: {
+              unit: chartType === 'bar' ? undefined : 'month',
+              tooltipFormat: chartType === 'bar' ? undefined : 'yyyy-MM'
+            },
+            adapters: {
+              date: {
+                lib: 'luxon'
+              }
+            },
+            ticks: {
+              color: 'white'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: yAxisLabel,
+              color: 'white'
+            },
+            ticks: {
+              color: 'white'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            }
+          }
+        };
+      }
 
       const datasetConfig = {
         label: yAxisLabel,
         data: values,
-        backgroundColor: chartType === 'pie' ? colors : 'rgba(75, 192, 192, 0.2)',
-        borderColor: chartType === 'pie' ? borderColors : 'rgba(75, 192, 192, 1)',
+        backgroundColor: chartType === 'pie' ? generateColors().colors : 'rgba(75, 192, 192, 0.2)',
+        borderColor: chartType === 'pie' ? generateColors().borderColors : 'rgba(75, 192, 192, 1)',
         borderWidth: chartType === 'pie' ? 2 : 1,
         fill: chartType !== 'bar' && chartType !== 'pie'
       };
@@ -353,80 +319,11 @@
           labels: labels,
           datasets: [datasetConfig]
         },
-        options: {
-          plugins: {
-            title: {
-              display: true,
-              text: chartTitle,
-              color: 'white',
-              font:{
-                size: 18
-              }
-            },
-            legend:{
-              labels:{
-                color: 'white',
-                font: {
-                  size: 14
-                }
-              }
-            }
-          },
-          scales: chartType !== 'pie' ? {
-            x: {
-              type: chartType === 'bar' ? 'category' : 'time',
-              title: {
-                display: true,
-                text: xAxisLabel,
-                color: 'white',
-                font: {
-                  size: 14
-                }
-              },
-              time: {
-                unit: chartType === 'bar' ? undefined : 'year',
-                tooltipFormat: chartType === 'bar' ? undefined : 'yyyy'
-              },
-              adapters: {
-                date: {
-                  lib: 'luxon'
-                }
-              },
-              ticks: {
-                color: 'white',
-                font: {
-                  size: 12
-                }
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.2)'
-              }
-            },
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: yAxisLabel,
-                color: 'white',
-                font: {
-                  size: 14
-                }
-              },
-              ticks: {
-                color: 'white',
-                font: {
-                  size: 12
-                }
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.2)'
-              }
-            }
-          } : {}
-        }
+        options: chartOptions
       });
 
-
+      console.log('Chart rendered successfully');
+    }
 
     function generateColors() {
       const colors = [
