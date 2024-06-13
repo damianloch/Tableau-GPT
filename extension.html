@@ -232,11 +232,17 @@
             title: {
               display: true,
               text: chartTitle,
-              color: 'white'
+              color: 'white',
+              font:{
+                size: 18
+              }
             },
             legend:{
               labels:{
-                color: 'white'
+                color: 'white',
+                font: {
+                  size: 14
+                }
               }
             }
           },
@@ -246,7 +252,10 @@
               title: {
                 display: true,
                 text: xAxisLabel,
-                color: 'white'
+                color: 'white',
+                font: {
+                  size: 14
+                }
               },
               time: {
                 unit: chartType === 'bar' ? undefined : 'year',
@@ -258,7 +267,10 @@
                 }
               },
               ticks: {
-                color: 'white'
+                color: 'white',
+                font: {
+                  size: 12
+                }
               },
               grid: {
                 color: 'rgba(255, 255, 255, 0.2)'
@@ -269,10 +281,16 @@
               title: {
                 display: true,
                 text: yAxisLabel,
-                color: 'white'
+                color: 'white',
+                font: {
+                  size: 14
+                }
               },
               ticks: {
-                color: 'white'
+                color: 'white',
+                font: {
+                  size: 12
+                }
               },
               grid: {
                 color: 'rgba(255, 255, 255, 0.2)'
