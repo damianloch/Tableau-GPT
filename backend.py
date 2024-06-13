@@ -39,23 +39,25 @@ def get_query_from_prompt(user_prompt, timeout=60):
                 - department_expenses (columns: month, department_name, expenses)
                 - customer_feedback (columns: month, product_name, feedback_score)
                 Only generate queries that reference these tables and their columns.
+                Use the format 'YYYY-MM-DD' for date values.
+                For quarters, use the date range to specify the quarter.
                 Example prompts and queries:
                 - "Plot a line chart to show the annual revenue growth from 2021 to 2023."
-                  SQL: SELECT * FROM annual_revenue WHERE year BETWEEN '2021-01-01' AND '2023-01-01';
+                  SQL: SELECT * FROM annual_revenue WHERE year BETWEEN '2021-01-01' AND '2023-12-31';
                 - "Create a line graph to illustrate the monthly net income for each month in 2023."
-                  SQL: SELECT * FROM monthly_net_income WHERE month BETWEEN '2023-01-01' AND '2023-12-01';
+                  SQL: SELECT * FROM monthly_net_income WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Generate a line graph showing the monthly revenue trend for the year 2023."
-                  SQL: SELECT * FROM monthly_revenue WHERE month BETWEEN '2023-01-01' AND '2023-12-01';
+                  SQL: SELECT * FROM monthly_revenue WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Produce a bar graph comparing quarterly profits for the four quarters of 2023."
                   SQL: SELECT * FROM quarterly_profits WHERE quarter BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Generate a line chart showing the monthly sales trend for Product A in 2023."
-                  SQL: SELECT month, sales FROM monthly_sales WHERE product_name = 'Product A' AND month BETWEEN '2023-01-01' AND '2023-12-01';
+                  SQL: SELECT month, sales FROM monthly_sales WHERE product_name = 'Product A' AND month BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Create a bar graph comparing the quarterly performance ratings of Alice and Bob in 2023."
                   SQL: SELECT quarter, employee_name, performance_rating FROM employee_performance WHERE quarter BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Produce a line chart to illustrate the monthly expenses for the Marketing department in 2023."
-                  SQL: SELECT month, expenses FROM department_expenses WHERE department_name = 'Marketing' AND month BETWEEN '2023-01-01' AND '2023-12-01';
+                  SQL: SELECT month, expenses FROM department_expenses WHERE department_name = 'Marketing' AND month BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Generate a bar graph showing the monthly feedback scores for Product B in 2023."
-                  SQL: SELECT month, feedback_score FROM customer_feedback WHERE product_name = 'Product B' AND month BETWEEN '2023-01-01' AND '2023-12-01';
+                  SQL: SELECT month, feedback_score FROM customer_feedback WHERE product_name = 'Product B' AND month BETWEEN '2023-01-01' AND '2023-12-31';
             """},
             {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ]
@@ -69,11 +71,12 @@ def get_query_from_prompt(user_prompt, timeout=60):
             logging.error(f"Failed to generate text: {response.text}")
             raise Exception("Failed to generate text: " + response.text)
 
+
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
+CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
 
 # Replace with your actual database connection URL
 DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/postgres'
@@ -101,10 +104,11 @@ def fetch_data():
 
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
-        return jsonify({"data": data_json, "tableName": table_name})
+        return jsonify({"data": data_json, "tableName": table_name, "query": query})#
     except Exception as e:
         logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
