@@ -8,14 +8,11 @@ import logging
 import httpx
 from dotenv import load_dotenv
 import os
-
 # Load environment variables from .env file
 load_dotenv()
-
 # Set the API key from the environment variable
 openai.api_key = os.getenv('OPENAI_API_KEY')
-
-def get_query_from_prompt(user_prompt, timeout=60):
+def get_query_and_table_from_prompt(user_prompt, timeout=60):
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {openai.api_key}'
@@ -63,25 +60,26 @@ def get_query_from_prompt(user_prompt, timeout=60):
             {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ]
     }
-
     with httpx.Client(timeout=timeout) as client:
         response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
         if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
+            response_data = response.json()['choices'][0]['message']['content'].strip()
+            # Assuming the response_data is a plain string SQL query
+            # You may need to parse the response appropriately based on actual API response
+            query = response_data
+            table_name = query.split('FROM')[1].split()[0].strip()  # Extract table name from query
+            return query, table_name
         else:
             logging.error(f"Failed to generate text: {response.text}")
             raise Exception("Failed to generate text: " + response.text)
-
-
+# Configure logging
 logging.basicConfig(level=logging.DEBUG)
-
+# Initialize Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
-
-# Replace with your actual database connection URL
-DATABASE_URL = 'postgresql://postgres:postgres2024@localhost/postgres'
-
+# Database connection URL
+DATABASE_URL = 'postgresql://postgres:1234burger@localhost/postgres'
 engine = create_engine(DATABASE_URL)
 
 @app.route('/fetch_data', methods=['POST'])
@@ -92,9 +90,10 @@ def fetch_data():
         if not prompt:
             logging.error("No prompt provided")
             return jsonify({"error": "No prompt provided"}), 400
-
-        query = get_query_from_prompt(prompt)
+        # Generate the SQL query and table name from the prompt
+        query, table_name = get_query_and_table_from_prompt(prompt)
         logging.debug(f"Generated query: {query}")
+        logging.debug(f"Extracted table name: {table_name}")
 
         # Extract table name from query
         table_name = re.search(r'FROM\s+(\w+)', query, re.IGNORECASE)
@@ -107,7 +106,6 @@ def fetch_data():
         with engine.connect() as connection:
             data = pd.read_sql(text(query), connection)
             logging.debug(f"Query result: {data}")
-
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
 
@@ -156,7 +154,5 @@ def fetch_data():
     except Exception as e:
         logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
-
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

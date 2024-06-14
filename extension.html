@@ -238,19 +238,19 @@
       if (dateProperty) {
         if (dateProperty === 'month') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
             console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
             return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
           });
         } else if (dateProperty === 'year') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
             console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
             return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
           });
         } else if(dateProperty === 'quarter') {
           labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty]);
+            const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
             console.log(`Parsing date '${item[dateProperty]}' as quarter:`, date);
             return date.isValid ? `Q${Math.ceil(date.month / 3)} ${date.year}` : 'Invalid DateTime';
           });
