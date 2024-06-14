@@ -1,9 +1,10 @@
-import logging
+import re
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
 import pandas as pd
 import openai
+import logging
 import httpx
 from dotenv import load_dotenv
 import os
@@ -96,7 +97,12 @@ def fetch_data():
         logging.debug(f"Generated query: {query}")
 
         # Extract table name from query
-        table_name = query.split('FROM')[1].split()[0].strip()
+        table_name = re.search(r'FROM\s+(\w+)', query, re.IGNORECASE)
+        if table_name:
+            table_name = table_name.group(1)
+        else:
+            logging.error("Table name could not be extracted from the query")
+            return jsonify({"error": "Table name could not be extracted from the query"}), 500
 
         with engine.connect() as connection:
             data = pd.read_sql(text(query), connection)
@@ -104,7 +110,49 @@ def fetch_data():
 
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
-        return jsonify({"data": data_json, "tableName": table_name, "query": query})#
+
+        if 'complex' in prompt.lower():
+            # Identify date and value columns dynamically
+            date_columns = ['month', 'year', 'quarter']
+            value_columns = data.select_dtypes(include=[float, int]).columns.tolist()
+            string_columns = data.select_dtypes(include=[object]).columns.tolist()
+
+            date_column = next((col for col in date_columns if col in data.columns), None)
+            value_column = next((col for col in value_columns if col not in date_columns), None)
+            entity_column = next((col for col in string_columns if col != date_column), None)
+
+            if not all([date_column, value_column, entity_column]):
+                logging.error("Expected columns not found in the data")
+                return jsonify({"error": "Expected columns not found in the data"}), 500
+
+            labels = sorted(list(set(data[date_column].apply(lambda x: x.strftime('%Y-%m')))))
+            logging.debug(f"Extracted labels: {labels}")
+
+            entities = sorted(data[entity_column].unique())
+            logging.debug(f"Extracted entities: {entities}")
+
+            datasets = {entity: [0] * len(labels) for entity in entities}
+            logging.debug(f"Initialized datasets: {datasets}")
+
+            for idx, label in enumerate(labels):
+                for entity in entities:
+                    entity_data = data[(data[entity_column] == entity) & (data[date_column].apply(lambda x: x.strftime('%Y-%m')) == label)]
+                    if not entity_data.empty:
+                        datasets[entity][idx] = entity_data[value_column].sum()
+
+            formatted_datasets = [
+                {
+                    'label': entity,
+                    'data': values
+                } for entity, values in datasets.items()
+            ]
+
+            return jsonify({"labels": labels, "datasets": formatted_datasets, "query": query})
+
+        return jsonify({"data": data_json, "tableName": table_name, "query": query})
+    except KeyError as ke:
+        logging.error(f"KeyError: {ke}", exc_info=True)
+        return jsonify({"error": str(ke)}), 500
     except Exception as e:
         logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
