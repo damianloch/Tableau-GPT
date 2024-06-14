@@ -64,7 +64,7 @@
       margin: 10px auto;
     }
     .suggestion-button {
-      background-color: white;
+      background-color: rgba(255, 255, 255);
       border: 2px solid #ccc;
       border-radius: 10px;
       padding: 10px;
@@ -301,7 +301,7 @@
         data: dataset.data,
         borderColor: generateColors().borderColors[index % generateColors().borderColors.length],
         backgroundColor: generateColors().colors[index % generateColors().colors.length].replace('0.9', '0.3'), // Adjust transparency here
-        fill: true
+        fill: false
       }));
 
       const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
