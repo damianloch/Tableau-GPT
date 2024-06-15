@@ -165,76 +165,76 @@
     ];
 
     function getRandomPrompt() {
-      return prompts[Math.floor(Math.random() * prompts.length)];
+    return prompts[Math.floor(Math.random() * prompts.length)];
+  }
+
+  function displayRandomPrompts() {
+    const suggestionBox = document.getElementById('suggestion-box');
+    suggestionBox.innerHTML = '';
+
+    for (let i = 0; i < 2; i++) { // Display two random prompts
+      const randomPrompt = getRandomPrompt();
+      const suggestionButton = document.createElement('div');
+      suggestionButton.className = 'suggestion-button';
+      suggestionButton.textContent = randomPrompt;
+      suggestionButton.onclick = function() { setPrompt(randomPrompt); };
+      suggestionBox.appendChild(suggestionButton);
+    }
+  }
+
+  async function sendPrompt() {
+    const promptValue = document.getElementById('prompt').value;
+    console.log('Prompt entered:', promptValue);
+
+    let chartType = null;
+    if ((promptValue.toLowerCase().includes('multi line')) || (promptValue.toLowerCase().includes('multi-line'))) {
+      chartType = 'complex';
+    } else if (promptValue.toLowerCase().includes('line')) {
+      chartType = 'line'; // Custom type for complex multiple lines chart
+    } else if (promptValue.toLowerCase().includes('bar')) {
+      chartType = 'bar';
+    } else if (promptValue.toLowerCase().includes('pie')) {
+      chartType = 'pie';
     }
 
-    function displayRandomPrompts() {
-      const suggestionBox = document.getElementById('suggestion-box');
-      suggestionBox.innerHTML = '';
+    try {
+      const response = await fetch('http://localhost:5000/fetch_data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptValue })
+      });
 
-      for (let i = 0; i < 2; i++) { // Display two random prompts
-        const randomPrompt = getRandomPrompt();
-        const suggestionButton = document.createElement('div');
-        suggestionButton.className = 'suggestion-button';
-        suggestionButton.textContent = randomPrompt;
-        suggestionButton.onclick = function() { setPrompt(randomPrompt); };
-        suggestionBox.appendChild(suggestionButton);
-      }
-    }
+      console.log('Response status:', response.status);
 
-    async function sendPrompt() {
-      const promptValue = document.getElementById('prompt').value;
-      console.log('Prompt entered:', promptValue);
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Data received:', result);
+        const tableName = result.tableName || 'Chart';
 
-      let chartType = null;
-      if ((promptValue.toLowerCase().includes('multi line')) || (promptValue.toLowerCase().includes('multi-line'))) {
-        chartType = 'complex';
-      } else if (promptValue.toLowerCase().includes('line')) {
-        chartType = 'line'; // Custom type for complex multiple lines chart
-      }else if (promptValue.toLowerCase().includes('bar')) {
-        chartType = 'bar';
-      } else if (promptValue.toLowerCase().includes('pie')) {
-        chartType = 'pie';
-      }
-
-      try {
-        const response = await fetch('http://localhost:5000/fetch_data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: promptValue })
-        });
-
-        console.log('Response status:', response.status);
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('Data received:', result);
-          const tableName = result.tableName || 'Chart';
-
-          if (chartType === 'complex') {
-            document.getElementById('cardContainer').style.display = 'none';
-            determineComplexChartConfigAndDisplay(result.labels, result.datasets, tableName);
-          } else if (chartType) {
-            document.getElementById('cardContainer').style.display = 'none';
-            determineChartConfigAndDisplay(result.data, chartType, tableName);
-          } else {
-            document.getElementById('chartContainer').style.display = 'none';
-            displayCard(result.data, tableName);
-          }
-
-          // Update random prompts after sending the prompt
-          displayRandomPrompts();
-
+        if (chartType === 'complex') {
+          document.getElementById('cardContainer').style.display = 'none';
+          determineComplexChartConfigAndDisplay(result.labels, result.datasets, tableName);
+        } else if (chartType) {
+          document.getElementById('cardContainer').style.display = 'none';
+          determineChartConfigAndDisplay(result.data, chartType, tableName);
         } else {
-          console.error('Failed to fetch data:', response.statusText);
+          document.getElementById('chartContainer').style.display = 'none';
+          displayCard(result.data, tableName);
         }
-      } catch (error) {
-        console.error('Error occurred during fetch:', error);
-      }
-    }
 
-    displayRandomPrompts();
-  </script>
+        // Update random prompts after sending the prompt
+        displayRandomPrompts();
+
+      } else {
+        console.error('Failed to fetch data:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error occurred during fetch:', error);
+    }
+  }
+
+  displayRandomPrompts();
+</script>
 </body>
 
   
