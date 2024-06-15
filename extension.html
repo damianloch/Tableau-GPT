@@ -514,6 +514,11 @@
         window.myChart.destroy();
       }
 
+      if (chartType === 'pie') {
+        ctx.canvas.width = 300;  // Set the width for the pie chart
+        ctx.canvas.height = 300; // Set the height for the pie chart
+      }
+
       const chartOptions = {
         plugins: {
           title: {
@@ -591,6 +596,7 @@
 
       console.log('Chart rendered successfully');
     }
+
 
     function generateColors() {
       const colors = [
