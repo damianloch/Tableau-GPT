@@ -164,7 +164,7 @@
       console.log('Prompt entered:', promptValue);
 
       let chartType = null;
-      if (promptValue.toLowerCase().includes('complex')) {
+      if ((promptValue.toLowerCase().includes('multi line')) || (promptValue.toLowerCase().includes('multi-line'))) {
         chartType = 'complex';
       } else if (promptValue.toLowerCase().includes('line')) {
         chartType = 'line'; // Custom type for complex multiple lines chart

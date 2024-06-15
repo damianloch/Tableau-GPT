@@ -79,7 +79,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
 # Database connection URL
-DATABASE_URL = 'postgresql://postgres:1234burger@localhost/postgres'
+DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
 engine = create_engine(DATABASE_URL)
 
 @app.route('/fetch_data', methods=['POST'])
@@ -109,7 +109,7 @@ def fetch_data():
         # Convert data to the format required by your frontend
         data_json = data.to_dict(orient='records')
 
-        if 'complex' in prompt.lower():
+        if ('multi-line' in prompt.lower() or "multi line" in prompt.lower()):
             # Identify date and value columns dynamically
             date_columns = ['month', 'year', 'quarter']
             value_columns = data.select_dtypes(include=[float, int]).columns.tolist()
