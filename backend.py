@@ -114,7 +114,7 @@ def fetch_data():
             return jsonify({"error": "No prompt provided"}), 400
         
         # Check if the prompt is asking for a graph
-        if 'generate a graph' in prompt.lower() or 'plot' in prompt.lower() or 'create a graph' in prompt.lower():
+        if 'graph' in prompt.lower() or 'plot' in prompt.lower() or 'create' in prompt.lower() or 'generate' in prompt.lower()  or 'produce' in prompt.lower():
             # Generate the SQL query and table name from the prompt
             query, table_name = get_query_and_table_from_prompt(prompt)
             logging.debug(f"Generated query: {query}")
@@ -184,6 +184,7 @@ def fetch_data():
     except Exception as e:
         logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
