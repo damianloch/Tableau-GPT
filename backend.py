@@ -82,6 +82,28 @@ CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.
 DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
 engine = create_engine(DATABASE_URL)
 
+# New function to get a response from the LLM for normal chat
+def get_response_from_llm(user_prompt, timeout=60):
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {openai.api_key}'
+    }
+    data = {
+        "model": "gpt-4",
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": f"{user_prompt}"}
+        ]
+    }
+    with httpx.Client(timeout=timeout) as client:
+        response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content'].strip()
+        else:
+            logging.error(f"Failed to generate text: {response.text}")
+            raise Exception("Failed to generate text: " + response.text)
+
+
 @app.route('/fetch_data', methods=['POST'])
 def fetch_data():
     try:
@@ -90,69 +112,78 @@ def fetch_data():
         if not prompt:
             logging.error("No prompt provided")
             return jsonify({"error": "No prompt provided"}), 400
-        # Generate the SQL query and table name from the prompt
-        query, table_name = get_query_and_table_from_prompt(prompt)
-        logging.debug(f"Generated query: {query}")
-        logging.debug(f"Extracted table name: {table_name}")
+        
+        # Check if the prompt is asking for a graph
+        if 'generate a graph' in prompt.lower() or 'plot' in prompt.lower() or 'create a graph' in prompt.lower():
+            # Generate the SQL query and table name from the prompt
+            query, table_name = get_query_and_table_from_prompt(prompt)
+            logging.debug(f"Generated query: {query}")
+            logging.debug(f"Extracted table name: {table_name}")
 
-        # Extract table name from query
-        table_name = re.search(r'FROM\s+(\w+)', query, re.IGNORECASE)
-        if table_name:
-            table_name = table_name.group(1)
+            # Extract table name from query
+            table_name = re.search(r'FROM\s+(\w+)', query, re.IGNORECASE)
+            if table_name:
+                table_name = table_name.group(1)
+            else:
+                logging.error("Table name could not be extracted from the query")
+                return jsonify({"error": "Table name could not be extracted from the query"}), 500
+
+            with engine.connect() as connection:
+                data = pd.read_sql(text(query), connection)
+                logging.debug(f"Query result: {data}")
+            # Convert data to the format required by your frontend
+            data_json = data.to_dict(orient='records')
+
+            if 'multi-line' in prompt.lower() or 'multi line' in prompt.lower():
+                # Identify date and value columns dynamically
+                date_columns = ['month', 'year', 'quarter']
+                value_columns = data.select_dtypes(include=[float, int]).columns.tolist()
+                string_columns = data.select_dtypes(include=[object]).columns.tolist()
+
+                date_column = next((col for col in date_columns if col in data.columns), None)
+                value_column = next((col for col in value_columns if col not in date_columns), None)
+                entity_column = next((col for col in string_columns if col != date_column), None)
+
+                if not all([date_column, value_column, entity_column]):
+                    logging.error("Expected columns not found in the data")
+                    return jsonify({"error": "Expected columns not found in the data"}), 500
+
+                labels = sorted(list(set(data[date_column].apply(lambda x: x.strftime('%Y-%m')))))
+                logging.debug(f"Extracted labels: {labels}")
+
+                entities = sorted(data[entity_column].unique())
+                logging.debug(f"Extracted entities: {entities}")
+
+                datasets = {entity: [0] * len(labels) for entity in entities}
+                logging.debug(f"Initialized datasets: {datasets}")
+
+                for idx, label in enumerate(labels):
+                    for entity in entities:
+                        entity_data = data[(data[entity_column] == entity) & (data[date_column].apply(lambda x: x.strftime('%Y-%m')) == label)]
+                        if not entity_data.empty:
+                            datasets[entity][idx] = entity_data[value_column].sum()
+
+                formatted_datasets = [
+                    {
+                        'label': entity,
+                        'data': values
+                    } for entity, values in datasets.items()
+                ]
+
+                return jsonify({"labels": labels, "datasets": formatted_datasets, "query": query})
+
+            return jsonify({"data": data_json, "tableName": table_name, "query": query})
         else:
-            logging.error("Table name could not be extracted from the query")
-            return jsonify({"error": "Table name could not be extracted from the query"}), 500
+            # New code for handling normal chat response
+            response = get_response_from_llm(prompt)
+            return jsonify({"response": response})
 
-        with engine.connect() as connection:
-            data = pd.read_sql(text(query), connection)
-            logging.debug(f"Query result: {data}")
-        # Convert data to the format required by your frontend
-        data_json = data.to_dict(orient='records')
-
-        if ('multi-line' in prompt.lower() or "multi line" in prompt.lower()):
-            # Identify date and value columns dynamically
-            date_columns = ['month', 'year', 'quarter']
-            value_columns = data.select_dtypes(include=[float, int]).columns.tolist()
-            string_columns = data.select_dtypes(include=[object]).columns.tolist()
-
-            date_column = next((col for col in date_columns if col in data.columns), None)
-            value_column = next((col for col in value_columns if col not in date_columns), None)
-            entity_column = next((col for col in string_columns if col != date_column), None)
-
-            if not all([date_column, value_column, entity_column]):
-                logging.error("Expected columns not found in the data")
-                return jsonify({"error": "Expected columns not found in the data"}), 500
-
-            labels = sorted(list(set(data[date_column].apply(lambda x: x.strftime('%Y-%m')))))
-            logging.debug(f"Extracted labels: {labels}")
-
-            entities = sorted(data[entity_column].unique())
-            logging.debug(f"Extracted entities: {entities}")
-
-            datasets = {entity: [0] * len(labels) for entity in entities}
-            logging.debug(f"Initialized datasets: {datasets}")
-
-            for idx, label in enumerate(labels):
-                for entity in entities:
-                    entity_data = data[(data[entity_column] == entity) & (data[date_column].apply(lambda x: x.strftime('%Y-%m')) == label)]
-                    if not entity_data.empty:
-                        datasets[entity][idx] = entity_data[value_column].sum()
-
-            formatted_datasets = [
-                {
-                    'label': entity,
-                    'data': values
-                } for entity, values in datasets.items()
-            ]
-
-            return jsonify({"labels": labels, "datasets": formatted_datasets, "query": query})
-
-        return jsonify({"data": data_json, "tableName": table_name, "query": query})
     except KeyError as ke:
         logging.error(f"KeyError: {ke}", exc_info=True)
         return jsonify({"error": str(ke)}), 500
     except Exception as e:
         logging.error(f"Error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
