@@ -8,6 +8,7 @@ import logging
 import httpx
 from dotenv import load_dotenv
 import os
+import uuid
 
 # Load environment variables from .env file
 load_dotenv()
@@ -22,7 +23,7 @@ app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  #
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
 
 # Database connection URL
-DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
+DATABASE_URL = 'postgresql://postgres:1234burger@localhost/postgres'
 engine = create_engine(DATABASE_URL)
 
 def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
@@ -72,7 +73,7 @@ def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
             """},
             {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ],
-        "session": session_id
+        # "session": session_id
     }
     with httpx.Client(timeout=timeout) as client:
         response = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=data)
@@ -103,7 +104,7 @@ def get_response_from_llm(user_prompt, session_id, timeout=60):
     data = {
         "model": "gpt-4",
         "messages": messages,
-        "session": session_id
+        # "session": session_id
     }
     
     with httpx.Client(timeout=timeout) as client:
