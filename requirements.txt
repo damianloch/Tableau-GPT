@@ -6,3 +6,5 @@ httpx
 psycopg2-binary
 python-dotenv
 flask-cors
+app
+requests
