@@ -3,7 +3,7 @@ import requests
 def test_fetch_data():
     url = "http://127.0.0.1:5000/fetch_data"  # Ensure it matches your Flask server port
     headers = {"Content-Type": "application/json"}
-    prompt = "Generate a complex line chart for Monthly Expenses, Revenue, and Net Income for 2023"
+    prompt = "hello"
     response = requests.post(url, json={"prompt": prompt}, headers=headers)
     
     if response.status_code == 200:
