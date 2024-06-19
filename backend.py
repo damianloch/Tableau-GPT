@@ -102,7 +102,7 @@ def get_response_from_llm(user_prompt, session_id, timeout=60):
     messages.append({"role": "user", "content": f"{user_prompt}"})
     
     data = {
-        "model": "gpt-4",
+        "model": "gpt-4o",
         "messages": messages,
         # "session": session_id
     }
@@ -137,7 +137,8 @@ def fetch_data():
             session['session_id'] = session_id
         
         # Check if the prompt is asking for a graph
-        if 'graph' in prompt.lower() or 'plot' in prompt.lower() or 'create' in prompt.lower() or 'generate' in prompt.lower()  or 'produce' in prompt.lower():
+        # if 'graph' in prompt.lower() or 'plot' in prompt.lower() or 'create' in prompt.lower() or 'generate' in prompt.lower()  or 'produce' in prompt.lower():
+        if prompt.endswith(' '):
             # Generate the SQL query and table name from the prompt
             query, table_name = get_query_and_table_from_prompt(prompt, session_id)
             logging.debug(f"Generated query: {query}")
