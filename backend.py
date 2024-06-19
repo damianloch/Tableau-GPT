@@ -23,7 +23,7 @@ app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  #
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
 
 # Database connection URL
-DATABASE_URL = 'postgresql://postgres:1234burger@localhost/postgres'
+DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
 engine = create_engine(DATABASE_URL)
 
 def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
@@ -138,7 +138,7 @@ def fetch_data():
         
         # Check if the prompt is asking for a graph
         # if 'graph' in prompt.lower() or 'plot' in prompt.lower() or 'create' in prompt.lower() or 'generate' in prompt.lower()  or 'produce' in prompt.lower():
-        if prompt.endswith(' '):
+        if not prompt.endswith(' '):
             # Generate the SQL query and table name from the prompt
             query, table_name = get_query_and_table_from_prompt(prompt, session_id)
             logging.debug(f"Generated query: {query}")
