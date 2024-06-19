@@ -14,9 +14,10 @@
       height: 100vh;
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: darkblue;
+      background-color: #f9ebd7;
       color: white;
       padding-top: 20px;
+      overflow: hidden;
     }
     #app {
       display: flex;
@@ -51,18 +52,33 @@
     .chat-message.bot {
       align-self: flex-start;
     }
+    .chart-message {
+      background-color: transparent;
+      padding: 0;
+      margin: 10px 0;
+      width: 100%;
+      box-shadow: none;
+    }
+    .chart-message canvas {
+      display: block;
+      margin: 0 auto;
+      width: 90% !important; /* Center the chart and increase its width */
+      height: 500px !important; /* Increase the height */
+    }
     #search-container {
       display: flex;
       align-items: center;
+      justify-content: center;
       position: relative;
       width: 100%;
       max-width: 600px;
       margin: 0 auto;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
+      align-items: center;
     }
     #prompt {
       width: 100%;
-      padding: 10px 40px 10px 10px;
+      padding: 10px 40px 10px 40px;
       font-size: 16px;
       font-family: Arial, sans-serif;
       border: 2px solid #ccc;
@@ -125,7 +141,7 @@
       background-color: #fff;
       border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 8px rgba(158, 28, 28, 0.1);
       color: #000;
       text-align: center;
     }
@@ -157,20 +173,19 @@
 </head>
 <body>
   <div id="app">
-    <div id="chat-container"></div> <!-- New container for chat messages -->
-    <div id="chartContainer">
-      <canvas id="myChart"></canvas>
-    </div>
-    <div id="cardContainer"></div>
     <div id="search-container">
       <textarea id="prompt" placeholder="Search..."></textarea>
       <button id="search-button" onclick="sendPrompt()">
         <img src="data:image/png;base64,=" id="search-icon" alt="Search">
       </button>
     </div>
-    <div id="suggestion-box"></div>
+    <div id="suggestion-box"></div> <!-- Move suggestion box here -->
+    <div id="chat-container"></div>
+    <div id="chartContainer">
+      <canvas id="myChart"></canvas>
+    </div>
+    <div id="cardContainer"></div>
   </div>
-  
   <script>
     // Your existing scripts
 
@@ -228,71 +243,147 @@
 
     let chartType = null;
     if ((promptValue.toLowerCase().includes('multi line')) || (promptValue.toLowerCase().includes('multi-line'))) {
-      chartType = 'complex'; // Custom type for complex multiple lines chart
+        chartType = 'complex'; // Custom type for complex multiple lines chart
     } else if (promptValue.toLowerCase().includes('line')) {
-      chartType = 'line';
+        chartType = 'line';
     } else if (promptValue.toLowerCase().includes('bar')) {
-      chartType = 'bar';
+        chartType = 'bar';
     } else if (promptValue.toLowerCase().includes('pie')) {
-      chartType = 'pie';
+        chartType = 'pie';
     }
 
     try {
-      const response = await fetch('http://localhost:5000/fetch_data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptValue })
-      });
+        const response = await fetch('http://localhost:5000/fetch_data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: promptValue })
+        });
 
-      console.log('Response status:', response.status);
+        console.log('Response status:', response.status);
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Data received:', result);
-        const tableName = result.tableName || 'Chart';
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Data received:', result);
+            const tableName = result.tableName || 'Chart';
 
-        if (chartType === 'complex') {
-          document.getElementById('cardContainer').style.display = 'none';
-          document.getElementById('aiResponseContainer').style.display = 'none';
-          determineComplexChartConfigAndDisplay(result.labels, result.datasets, tableName);
-        } else if (chartType) {
-          document.getElementById('cardContainer').style.display = 'none';
-          document.getElementById('aiResponseContainer').style.display = 'none';
-          determineChartConfigAndDisplay(result.data, chartType, tableName);
-        } else if (result.response) {
-          document.getElementById('chartContainer').style.display = 'none';
-          document.getElementById('cardContainer').style.display = 'none';
-          displayAIResponse(result.response);
+            if (chartType === 'complex') {
+                console.log('Chart type is complex');
+                addChatMessageWithChart(result, chartType, tableName);
+            } else if (chartType) {
+                console.log('Chart type:', chartType);
+                addChatMessageWithChart(result.data, chartType, tableName);
+            } else if (result.response) {
+                console.log('Handling AI response');
+                displayAIResponse(result.response);
+            } else {
+                console.log('Handling data card display');
+                displayCard(result.data, tableName);
+            }
+
+            // Update random prompts after sending the prompt
+            displayRandomPrompts();
         } else {
-          document.getElementById('chartContainer').style.display = 'none';
-          displayCard(result.data, tableName);
+            console.error('Failed to fetch data:', response.statusText);
         }
-
-        // Update random prompts after sending the prompt
-        displayRandomPrompts();
-
-      } else {
-        console.error('Failed to fetch data:', response.statusText);
-      }
     } catch (error) {
-      console.error('Error occurred during fetch:', error);
+        console.error('Error occurred during fetch:', error);
     }
-  }
+}
 
-  function addChatMessage(message, type) {
+function addChatMessage(message, type) {
     const chatContainer = document.getElementById('chat-container');
+    if (!chatContainer) {
+        console.error('Chat container element not found');
+        return;
+    }
+    console.log('Adding chat message:', message, 'Type:', type);
     const chatMessage = document.createElement('div');
     chatMessage.className = `chat-message ${type}`;
     chatMessage.textContent = message;
     chatContainer.appendChild(chatMessage);
     chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
+}
 
-  function displayAIResponse(response) {
+function addChatMessageWithChart(data, chartType, tableName) {
+    const chatContainer = document.getElementById('chat-container');
+    if (!chatContainer) {
+        console.error('Chat container element not found');
+        return;
+    }
+    console.log('Adding chat message with chart:', data, 'Chart Type:', chartType, 'Table Name:', tableName);
+
+    const chatMessage = document.createElement('div');
+    chatMessage.className = 'chat-message bot chart-message';
+
+    const canvas = document.createElement('canvas');
+    canvas.id = `chart-${Date.now()}`;
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+
+    chatMessage.appendChild(canvas);
+    chatContainer.appendChild(chatMessage);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    if (chartType === 'complex') {
+        determineComplexChartConfigAndDisplay(data.labels, data.datasets, tableName, canvas.id);
+    } else {
+        determineChartConfigAndDisplay(data, chartType, tableName, canvas.id);
+    }
+}
+
+function displayAIResponse(response) {
+    console.log('Displaying AI response:', response);
     addChatMessage(response, 'bot');
-  }
+}
 
-  displayRandomPrompts();
+function hideContainers(containerIds) {
+    containerIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            console.log('Hiding container:', id);
+            element.style.display = 'none';
+        } else {
+            console.error(`Element with ID ${id} not found`);
+        }
+    });
+}
+
+function resizeTextarea() {
+    const prompt = document.getElementById('prompt');
+    if (!prompt) {
+        console.error('Prompt textarea element not found');
+        return;
+    }
+    console.log('Resizing textarea');
+    prompt.style.height = 'auto';
+    prompt.style.height = prompt.scrollHeight + 'px';
+}
+
+function setPrompt(text) {
+    const prompt = document.getElementById('prompt');
+    if (!prompt) {
+        console.error('Prompt textarea element not found');
+        return;
+    }
+    console.log('Setting prompt text:', text);
+    prompt.value = text;
+    resizeTextarea();
+    sendPrompt();
+}
+
+document.getElementById('prompt').addEventListener('input', function() {
+    console.log('Textarea input event');
+    resizeTextarea();
+});
+
+document.getElementById('prompt').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) { // Check if Enter key is pressed and shift key is not held
+        event.preventDefault(); // Prevent the default action (new line in the textarea)
+        sendPrompt(); // Call the sendPrompt function
+    }
+});
+
+displayRandomPrompts();
   </script>
   <script>
     const prompt = document.getElementById('prompt');
@@ -328,269 +419,255 @@
       `;
     }
 
-    function determineChartConfigAndDisplay(data, chartType, tableName) {
-      if (!data || data.length === 0) {
+    function determineChartConfigAndDisplay(data, chartType, tableName, canvasId) {
+    if (!data || data.length === 0) {
         console.error('No data received to display');
         return;
-      }
-      console.log('Data for chart configuration:', data);
-      let labels = [];
-      let values = [];
-      let xAxisLabel = '';
-      let yAxisLabel = '';
-      const firstItem = data[0];
-      const dateProperties = ['month', 'year', 'quarter'];
-      const numericProperties = Object.keys(firstItem).filter(key => typeof firstItem[key] === 'number');
-      const dateProperty = dateProperties.find(prop => prop in firstItem);
-      if (dateProperty) {
+    }
+    console.log('Data for chart configuration:', data);
+    let labels = [];
+    let values = [];
+    let xAxisLabel = '';
+    let yAxisLabel = '';
+    const firstItem = data[0];
+    const dateProperties = ['month', 'year', 'quarter'];
+    const numericProperties = Object.keys(firstItem).filter(key => typeof firstItem[key] === 'number');
+    const dateProperty = dateProperties.find(prop => prop in firstItem);
+    if (dateProperty) {
         if (dateProperty === 'month') {
-          labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
-            console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
-            return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
-          });
+            labels = data.map(item => {
+                const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
+                console.log(`Parsing date '${item[dateProperty]}' as month:`, date);
+                return date.isValid ? date.toFormat('yyyy-MM') : 'Invalid DateTime';
+            });
         } else if (dateProperty === 'year') {
-          labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
-            console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
-            return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
-          });
+            labels = data.map(item => {
+                const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
+                console.log(`Parsing date '${item[dateProperty]}' as year:`, date);
+                return date.isValid ? date.toFormat('yyyy') : 'Invalid DateTime';
+            });
         } else if(dateProperty === 'quarter') {
-          labels = data.map(item => {
-            const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
-            console.log(`Parsing date '${item[dateProperty]}' as quarter:`, date);
-            return date.isValid ? `Q${Math.ceil(date.month / 3)} ${date.year}` : 'Invalid DateTime';
-          });
+            labels = data.map(item => {
+                const date = luxon.DateTime.fromHTTP(item[dateProperty], { zone: 'utc' });
+                console.log(`Parsing date '${item[dateProperty]}' as quarter:`, date);
+                return date.isValid ? `Q${Math.ceil(date.month / 3)} ${date.year}` : 'Invalid DateTime';
+            });
         } else {
-          labels = data.map(item => item[dateProperty]);
+            labels = data.map(item => item[dateProperty]);
         }
         xAxisLabel = dateProperty.charAt(0).toUpperCase() + dateProperty.slice(1).replace(/_/g, ' ');
-      } else if (chartType === 'pie') {
-        // For pie charts, use non-date properties for labels if date property is not found
+    } else if (chartType === 'pie') {
         const labelProperty = Object.keys(firstItem).find(key => typeof firstItem[key] === 'string');
         if (labelProperty) {
-          labels = data.map(item => item[labelProperty]);
-          xAxisLabel = labelProperty.charAt(0).toUpperCase() + labelProperty.slice(1).replace(/_/g, ' ');
+            labels = data.map(item => item[labelProperty]);
+            xAxisLabel = labelProperty.charAt(0).toUpperCase() + labelProperty.slice(1).replace(/_/g, ' ');
         } else {
-          console.error('No suitable property found for labels in pie chart');
-          return;
+            console.error('No suitable property found for labels in pie chart');
+            return;
         }
-      } else {
+    } else {
         console.error('No date property found');
         return;
-      }
-      if (numericProperties.length > 0) {
+    }
+    if (numericProperties.length > 0) {
         values = data.map(item => item[numericProperties[0]]);
         yAxisLabel = numericProperties[0].charAt(0).toUpperCase() + numericProperties[0].slice(1).replace(/_/g, ' ');
-      } else {
+    } else {
         console.error('No numeric property found');
         return;
-      }
-      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
-      console.log('Labels:', labels);
-      console.log('Values:', values);
-      console.log('X Axis Label:', xAxisLabel);
-      console.log('Y Axis Label:', yAxisLabel);
-      console.log('Chart type:', chartType);
-      console.log('Chart title:', chartTitle);
-      displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle);
+    }
+    const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
+    console.log('Labels:', labels);
+    console.log('Values:', values);
+    console.log('X Axis Label:', xAxisLabel);
+    console.log('Y Axis Label:', yAxisLabel);
+    console.log('Chart type:', chartType);
+    console.log('Chart title:', chartTitle);
+    displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle, canvasId);
     }
 
-    function determineComplexChartConfigAndDisplay(labels, datasets, tableName) {
-      if (!datasets || datasets.length === 0) {
+
+    function determineComplexChartConfigAndDisplay(labels, datasets, tableName, canvasId) {
+    if (!datasets || datasets.length === 0) {
         console.error('No data received to display');
         return;
-      }
-      console.log('Labels:', labels);
-      console.log('Datasets:', datasets);
+    }
+    console.log('Labels:', labels);
+    console.log('Datasets:', datasets);
 
-      const formattedDatasets = datasets.map((dataset, index) => ({
+    const formattedDatasets = datasets.map((dataset, index) => ({
         label: dataset.label,
         data: dataset.data,
         borderColor: generateColors().borderColors[index % generateColors().borderColors.length],
         backgroundColor: generateColors().colors[index % generateColors().colors.length].replace('0.9', '0.3'), // Adjust transparency here
         fill: false
-      }));
+    }));
 
-      const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
+    const chartTitle = tableName.charAt(0).toUpperCase() + tableName.slice(1).replace(/_/g, ' ');
 
-      displayComplexChart(labels, formattedDatasets, 'Month', 'Values', chartTitle);
+    displayComplexChart(labels, formattedDatasets, 'Month', 'Values', chartTitle, canvasId);
     }
 
-    function displayComplexChart(labels, datasets, xAxisLabel, yAxisLabel, chartTitle) {
-      const ctx = document.getElementById('myChart').getContext('2d');
 
-      document.getElementById('chartContainer').style.display = 'block';
+    function displayComplexChart(labels, datasets, xAxisLabel, yAxisLabel, chartTitle, canvasId) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
 
-      if (window.myChart && typeof window.myChart.destroy === 'function') {
-        window.myChart.destroy();
-      }
-
-      const chartOptions = {
+    const chartOptions = {
         plugins: {
-          title: {
-            display: true,
-            text: chartTitle,
-            color: 'white'
-          },
-          legend: {
-            labels: {
-              color: 'white'
+            title: {
+                display: true,
+                text: chartTitle,
+                color: 'white'
+            },
+            legend: {
+                labels: {
+                    color: 'white'
+                }
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
             }
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false
-          },
-          hover: {
-            mode: 'nearest',
-            intersect: true
-          }
         },
         scales: {
-          x: {
-            type: 'time',
-            title: {
-              display: true,
-              text: xAxisLabel,
-              color: 'white'
+            x: {
+                type: 'time',
+                title: {
+                    display: true,
+                    text: xAxisLabel,
+                    color: 'white'
+                },
+                time: {
+                    unit: 'month',
+                    tooltipFormat: 'yyyy-MM'
+                },
+                adapters: {
+                    date: {
+                        lib: 'luxon'
+                    }
+                },
+                ticks: {
+                    color: 'white'
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.2)'
+                }
             },
-            time: {
-              unit: 'month',
-              tooltipFormat: 'yyyy-MM'
-            },
-            adapters: {
-              date: {
-                lib: 'luxon'
-              }
-            },
-            ticks: {
-              color: 'white'
-            },
-            grid: {
-              color: 'rgba(255, 255, 255, 0.2)'
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: yAxisLabel,
+                    color: 'white'
+                },
+                ticks: {
+                    color: 'white'
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.2)'
+                }
             }
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: yAxisLabel,
-              color: 'white'
-            },
-            ticks: {
-              color: 'white'
-            },
-            grid: {
-              color: 'rgba(255, 255, 255, 0.2)'
-            }
-          }
         }
-      };
+    };
 
-      window.myChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labels,
-          datasets: datasets
+            labels: labels,
+            datasets: datasets
         },
         options: chartOptions
-      });
+    });
 
-      console.log('Complex chart rendered successfully');
+    console.log('Complex chart rendered successfully');
     }
 
-    function displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle) {
-      const ctx = document.getElementById('myChart').getContext('2d');
-      
-      document.getElementById('chartContainer').style.display = 'block';
 
-      if (window.myChart && typeof window.myChart.destroy === 'function') {
-        window.myChart.destroy();
-      }
+    function displayChart(labels, values, xAxisLabel, yAxisLabel, chartType, chartTitle, canvasId) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
 
-      if (chartType === 'pie') {
-        ctx.canvas.width = 75;  // Set the width for the pie chart
-        ctx.canvas.height = 75; // Set the height for the pie chart
-      }
-
-      const chartOptions = {
+    const chartOptions = {
         plugins: {
-          title: {
-            display: true,
-            text: chartTitle,
-            color: 'white'
-          },
-          legend: {
-            labels: {
-              color: 'white'
+            title: {
+                display: true,
+                text: chartTitle,
+                color: 'white'
+            },
+            legend: {
+                labels: {
+                    color: 'white'
+                }
             }
-          }
         }
-      };
+    };
 
-      if (chartType !== 'pie') {
+    if (chartType !== 'pie') {
         chartOptions.scales = {
-          x: {
-            type: chartType === 'bar' ? 'category' : 'time',
-            title: {
-              display: true,
-              text: xAxisLabel,
-              color: 'white'
+            x: {
+                type: chartType === 'bar' ? 'category' : 'time',
+                title: {
+                    display: true,
+                    text: xAxisLabel,
+                    color: 'white'
+                },
+                time: {
+                    unit: chartType === 'bar' ? undefined : 'month',
+                    tooltipFormat: chartType === 'bar' ? undefined : 'yyyy-MM'
+                },
+                adapters: {
+                    date: {
+                        lib: 'luxon'
+                    }
+                },
+                ticks: {
+                    color: 'white'
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.2)'
+                }
             },
-            time: {
-              unit: chartType === 'bar' ? undefined : 'month',
-              tooltipFormat: chartType === 'bar' ? undefined : 'yyyy-MM'
-            },
-            adapters: {
-              date: {
-                lib: 'luxon'
-              }
-            },
-            ticks: {
-              color: 'white'
-            },
-            grid: {
-              color: 'rgba(255, 255, 255, 0.2)'
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: yAxisLabel,
+                    color: 'white'
+                },
+                ticks: {
+                    color: 'white'
+                },
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.2)'
+                }
             }
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: yAxisLabel,
-              color: 'white'
-            },
-            ticks: {
-              color: 'white'
-            },
-            grid: {
-              color: 'rgba(255, 255, 255, 0.2)'
-            }
-          }
         };
-      }
+    }
 
-      const datasetConfig = {
+    const datasetConfig = {
         label: yAxisLabel,
         data: values,
         backgroundColor: chartType === 'pie' ? generateColors().colors : 'rgba(75, 192, 192, 0.2)',
         borderColor: chartType === 'pie' ? generateColors().borderColors : 'rgba(75, 192, 192, 1)',
         borderWidth: chartType === 'pie' ? 2 : 1,
         fill: chartType !== 'bar' && chartType !== 'pie'
-      };
+    };
 
-      window.myChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: chartType,
         data: {
-          labels: labels,
-          datasets: [datasetConfig]
+            labels: labels,
+            datasets: [datasetConfig]
         },
         options: chartOptions
-      });
+    });
 
-      console.log('Chart rendered successfully');
+    console.log('Chart rendered successfully');
     }
+
 
 
     function generateColors() {
