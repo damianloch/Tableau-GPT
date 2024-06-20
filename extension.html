@@ -326,6 +326,13 @@ function addChatMessage(message, type) {
     const chatMessage = document.createElement('div');
     chatMessage.className = `chat-message ${type}`;
     chatMessage.textContent = message;
+
+    if (type === 'bot') {
+        chatMessage.innerHTML = marked(message); // Use marked to render markdown/HTML content
+    } else {
+        chatMessage.textContent = message; // Use textContent for user messages to prevent HTML injection
+    }
+    
     chatContainer.appendChild(chatMessage);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     scrollToBottom();
