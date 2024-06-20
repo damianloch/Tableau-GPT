@@ -180,7 +180,11 @@ def fetch_data():
                 logging.debug(f"Query result: {data}")
             # Convert data to the format required by your frontend
             #data_json = data.to_dict(orient='records')
-            data_json = data.astype(str).to_dict(orient='records')
+            #data_json = data.astype(str).to_dict(orient='records')
+            data = data.convert_dtypes()
+            data = data.astype({col: 'object' for col in data.select_dtypes(include=['Int64', 'int64', 'float64']).columns})
+            data_json = data.to_dict(orient='records')
+
 
 
             if 'multi-line' in prompt.lower() or 'multi line' in prompt.lower():
