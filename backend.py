@@ -177,8 +177,7 @@ def fetch_data():
                 data = pd.read_sql(text(query), connection)
                 logging.debug(f"Query result: {data}")
             # Convert data to the format required by your frontend
-            data_json = data.applymap(lambda x: int(x) if isinstance(x, pd.Int64Dtype().type) else x).to_dict(orient='records')
-
+            data_json = data.astype(object).to_dict(orient='records')
 
 
             if 'multi-line' in prompt.lower() or 'multi line' in prompt.lower():
