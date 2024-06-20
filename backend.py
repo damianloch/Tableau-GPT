@@ -50,6 +50,11 @@ def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
                 - employee_performance (columns: quarter, employee_name, performance_rating)
                 - department_expenses (columns: month, department_name, expenses)
                 - customer_feedback (columns: month, product_name, feedback_score)
+                - manufacturing_monthly_production (columns: month, total_produced)
+                - manufacturing_monthly_quality_control (columns: month, defect_rate)
+                - manufacturing_monthly_shipping_costs (columns: month, shipment_cost)
+                - manufacturing_monthly_supplier_orders (columns: month, total_orders)
+
                 Only generate queries that reference these tables and their columns.
                 Use the format 'YYYY-MM-DD' for date values.
                 For quarters, use the date range to specify the quarter.
@@ -70,7 +75,17 @@ def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
                   SQL: SELECT month, expenses FROM department_expenses WHERE department_name = 'Marketing' AND month BETWEEN '2023-01-01' AND '2023-12-31';
                 - "Generate a bar graph showing the monthly feedback scores for Product B in 2023."
                   SQL: SELECT month, feedback_score FROM customer_feedback WHERE product_name = 'Product B' AND month BETWEEN '2023-01-01' AND '2023-12-31';
-            """},
+                - "Create a line graph to illustrate the monthly defect rate for each month in 2023."
+                  SQL: SELECT month, defect_rate FROM manufacturing_monthly_quality_control WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
+                - "Generate a line graph showing the monthly shipment costs for each month in 2023."
+                  SQL: SELECT month, shipment_cost FROM manufacturing_monthly_shipping_costs WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
+                - "Produce a bar graph comparing the total supplier orders for each month in 2023."
+                  SQL: SELECT month, total_orders FROM manufacturing_monthly_supplier_orders WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
+                -"Generate a multi line chart for production quantities of Product C, and Product D for 2023."
+                  SQL: SELECT month, product_name, sales FROM manufacturing_monthly_sales WHERE product_name IN ('Product C', 'Product D') AND month BETWEEN '2023-01-01' AND '2023-12-31';"
+                -"Produce a multi line chart about the monthly orders for the manufacturing department for product A, product B and product C."
+                  SQL: SELECT month, product_name, total_orders FROM manufacturing_monthly_orders WHERE product_name IN ('Product A', 'Product B', 'Product C') AND month BETWEEN '2023-01-01' AND '2023-06-01';
+             """},
             {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ],
         # "session": session_id
