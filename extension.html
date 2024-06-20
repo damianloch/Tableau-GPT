@@ -307,13 +307,7 @@
         }
     } catch (error) {
         console.error('Error occurred during fetch:', error);
-    } finally{
-      promptElement.value = '';
-      resizeTextarea();
-    }
-
-    promptElement.value = '';
-    resizeTextarea();
+    } 
 }
 
 function addChatMessage(message, type) {
@@ -332,7 +326,7 @@ function addChatMessage(message, type) {
     } else {
         chatMessage.textContent = message; // Use textContent for user messages to prevent HTML injection
     }
-    
+
     chatContainer.appendChild(chatMessage);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     scrollToBottom();
