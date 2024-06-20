@@ -38,6 +38,7 @@ def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
                 You are a helpful assistant that only outputs SQL queries for a PostgreSQL database.
                 The database contains the following tables:
                 - monthly_revenue (columns: month, revenue)
+                - monthly_shipping_costs ((columns: month, shipping_cost)
                 - monthly_expenses (columns: month, expenses)
                 - quarterly_profits (columns: quarter, profit)
                 - annual_revenue (columns: year, revenue)
@@ -54,6 +55,7 @@ def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
                 - manufacturing_monthly_orders (columns: month, product_name, total_orders)
                 - manufacturing_monthly_production (columns: month, product_name, total_produced)
                 - manufacturing_monthly_shipping_costs (columns: month, product_name, shipment_cost)
+                - product_defects (ciolumns: quarter, product, defects)
         
                 Only generate queries that reference these tables and their columns.
                 Use the format 'YYYY-MM-DD' for date values.
@@ -85,6 +87,10 @@ def get_query_and_table_from_prompt(user_prompt, session_id, timeout=60):
                   SQL: SELECT month, product_name, sales FROM manufacturing_monthly_sales WHERE product_name IN ('Product C', 'Product D') AND month BETWEEN '2023-01-01' AND '2023-12-31';"
                 -"Produce a multi line chart about the monthly orders for the manufacturing department for product A, product B and product C."
                   SQL: SELECT month, product_name, total_orders FROM manufacturing_monthly_orders WHERE product_name IN ('Product A', 'Product B', 'Product C') AND month BETWEEN '2023-01-01' AND '2023-06-01';
+                "Generate a line graph showing the monthly shipping costs for the year 2023."
+                  SQL: SELECT * FROM monthly_shipping_costs WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
+                "Create a multi line chart about the monthly defect rate for each product in 2023"
+                  SQL: SELECT * FROM product_defects WHERE month BETWEEN '2023-01-01' AND '2023-12-31';
              """},
             {"role": "user", "content": f"Generate a SQL query for the following request: '{user_prompt}'. Only provide the SQL query without any additional text."}
         ],
