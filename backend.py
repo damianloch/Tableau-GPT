@@ -20,7 +20,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
-# Initialize Flask application
+# Initialize Flask applicatio
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
