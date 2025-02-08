@@ -25,7 +25,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'c1f680bac80ec50ef314dd7041dc110688d3c02df2951cdb'  # Replace with your actual secret key
 CORS(app, resources={r"/*": {"origins": ["http://localhost:8000", "http://127.0.0.1:8000", "https://damianloch.github.io"]}})
 
-# Database connection URL
+# Database connection URLd
 DATABASE_URL = 'postgresql://postgres:1234burger@localhost/my_database'
 engine = create_engine(DATABASE_URL)
 
